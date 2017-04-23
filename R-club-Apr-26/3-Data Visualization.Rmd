@@ -50,12 +50,35 @@ _This plot isn't useful because these are qualitative variables. It doesn't prov
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
 ```
+_The color option doesn't actually take a color argument. It takes another set of date, like class, and colors the points on the graph according to the different classes the points fall into. Since there are 7 classes, there would be 7 different colors on the graph. To properly get the blue color, one sets color = "blue" outside of aes()._  
 
 **2. Which variables in mpg are categorical? Which variables are continuous? Hint: type ?mpg to read the documentation for the dataset. How can you see this information when you run mpg?**  
+_Manufacturer, model, trans, fl, and class are all categorical. When you run mpg, the columns (variables) are classified as <int> or <dbl> for numbers and <chr> for character, or letters/words._  
+
 **3. Map a continous variable to color, size, and shape. How do these aesthetics behave differently for categorical vs continous variables?**  
+_First, r throws an error that a continous variable cannot be mapped to shape. So let's try it without giving a shape._  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = year, size = cty))
+```
+_If a continous variable is given for color, it appears that the color is then based on a gradient instead of each year being it's own distinct color. As for size, a continous variable seems to have the same effect. Luckily, cty had consistent increments so the size distribution looks constant._  
+
 **4. WHat happens if you map the same variable to multiple aesthetics?**  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = cty, y = cty, color = cty, size = cty))
+```
+_As an extreme test, I made each option in aesthetics the same variable cty. The resulting plot is a straight line with a continous range of colors and sizes for the data points._  
+
 **5. What does the stroke aesthetic do? What shapes does it work with? Hint: use ?geom_point.**  
+_The stroke aesthetic modifies the width of the border of outlined data points._  
+
 **6. What happens if you map an aesthetic to something other than a variable name, like aes(color = displ < 5)?**  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = displ < 5))
+```
+_It appears that this sets a rule for the color. If the displ is less than 5, the data point is colored one way and another way if it is not less than 5. However, this particular example only appears to be binary._  
 
 ### 3.5.1 Exercises  
 **1. What happens if you facet on a continuous variable?**  
