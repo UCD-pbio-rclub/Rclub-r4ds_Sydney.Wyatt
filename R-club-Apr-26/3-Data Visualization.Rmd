@@ -14,10 +14,35 @@ library(tidyverse)
 
 ### 3.2.4 Exercises 
 **1. Run ggplot(data = mpg) what do you see?**  
+```{r}
+ggplot(data = mpg)
+```
+_Well, nothing happens. I don't get a plot. But according to the text under 3.2.2, that's what's supposed to happen._  
+
 **2. How many rows are in mtcars? How many columns?**   
+_To look at the number of rows and columns in mtcars, I can run the code below._  
+```{r}
+nrow(mtcars)
+ncol(mtcars)
+```
+_There are 32 rows and 11 columns._  
+
 **3. What does the drv variable describe? Read the help for ?mpg to find out.**  
+_The drv variable describes the kind of drive the car has, as in front-wheel drive (f), rear wheel drive (r), or 4 wheel drive (4wd)._  
+
 **4. Make a scatterplot of hwy vs cyl.**  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = hwy, y = cyl))
+```
+
 **5. What happens if you make a scatterplot of class vs drv. Why is the plot not useful?**  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = class, y = drv))
+```
+
+_This plot isn't useful because these are qualitative variables. It doesn't provide a count of how many compacts there are with front wheel drive versus 4 wheel drive; it just provides the information that compacts have fall into both of those categories._  
 
 ### 3.3.1 Exercises 
 **1. What's wrong with this code? Why are the points not blue?**  
