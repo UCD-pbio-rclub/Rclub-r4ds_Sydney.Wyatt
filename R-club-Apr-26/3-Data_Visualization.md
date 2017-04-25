@@ -107,15 +107,33 @@ ggplot(data = mpg) +
 _It appears that this sets a rule for the color. If the displ is less than 5, the data point is colored one way and another way if it is not less than 5. However, this particular example only appears to be binary._  
 
 ### 3.5.1 Exercises  
+
+_Note: A facet is part of the main plot. It split up the plot into subplots that display one subset of the data. To facet by 1 variable, use facet_wrap(). To use two variables, use facet_grid(). It is similar to wrap, except the two variable names are separated by ~ instead of that ~ preceeding a single variable name._  
+
 **1. What happens if you facet on a continuous variable?**  
+_The text indicates that the variable passed to facet_wrap() should be discrete. So my guess is that giving it a continuous variable will throw an error._  
+
+```r
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ cty, nrow = 3)
+```
+
+![](3-Data_Visualization_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+_Well, upon running the code, it clearly does not throw an error. Instead we just get many many plots._  
+
 **2. What do the empty cells in plot with facet_grid(drv ~ cyl) mean? How do they relate to this plot?**  
 
 ```r
 ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = drv, y = cyl))
+  geom_point(mapping = aes(x = drv, y = cyl)) + 
+  facet_grid(drv ~ cyl)
 ```
 
-![](3-Data_Visualization_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](3-Data_Visualization_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+_The empty cells indicate that there is no data there. For example, there are no cars that have 4 cylinders that are also rear-wheel drive._  
 
 **3. What plots does the following code make? What does . do?**  
 
@@ -125,7 +143,9 @@ ggplot(data = mpg) +
   facet_grid(drv ~ .)
 ```
 
-![](3-Data_Visualization_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](3-Data_Visualization_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
+_The texts says to use . instead of a variable name to not facet in the rows or columns dimension. Because the . was the second variable, we faceted into a column instead of a row._  
 
 **4. Take the first faceted plot in this section:**
 
@@ -135,7 +155,33 @@ ggplot(data = mpg) +
   facet_wrap(~ class, nrow = 2)
 ```
 
-![](3-Data_Visualization_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+![](3-Data_Visualization_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+
 **What are the advantages to using faceting instead of the colour aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?**  
+_Faceting clearly arranges the data by multiple variables, allowing for a nice visualization of a lot of data. However, with more data, the color aesthetic is better suited; faceting would just make a mess of it all._  
+
 **5. Read ?facet_wrap. What does nrow do? What does ncol do? WHat other options control the layout of the individual panels? Why doesn't facet_grid() have nrow and ncol variables?**  
+_nrow and ncol designate the number of rows and columns. The facet_grip() command doesn't have this because the number of rows and columns depends on the number of categories in each variable given. The other options that control the layout are dir, strip.position, switch, as.table, scales, and shrink._  
+
+
 **6. When using facet_grid() you should usually put the variable with more unique levels in the columns. Why?**  
+_It makes the layout visually more appealing. Here is an example of the convention flipped, where the variable with more unique levels is in the rows._  
+
+```r
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(cyl ~ drv)
+```
+
+![](3-Data_Visualization_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
+_And here is having the more unique variable in the columns._  
+
+```r
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(drv ~ cyl)
+```
+
+![](3-Data_Visualization_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+
