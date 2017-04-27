@@ -3,6 +3,7 @@
 # Data Visualization 
 
 
+
 ### 3.2.4 Exercises 
 **1. Run ggplot(data = mpg) what do you see?**  
 
@@ -10,7 +11,7 @@
 ggplot(data = mpg)
 ```
 
-![](3-Data_Visualization_files/figure-html/unnamed-chunk-2-1.png)<!-- -->  
+![](3-Data_Visualization_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 _Well, nothing happens. I don't get a plot. But according to the text under 3.2.2, that's what's supposed to happen._  
 
 **2. How many rows are in mtcars? How many columns?**   

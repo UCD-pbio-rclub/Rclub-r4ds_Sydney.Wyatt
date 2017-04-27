@@ -7,7 +7,6 @@ output:
 
 # Data Visualization 
 
-We will be using the _tidyverse_ dataset:
 ```{r include = FALSE}
 library(tidyverse)
 ```
