@@ -1,0 +1,101 @@
+---
+title: "Data Visualization Continued"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 3.6.1 Exercises
+**1. What `geom` would you use to draw a line chart? A boxplot? A histogram? An area chart?**  
+**2. Run this code in your head and predict what the output will look like. Then run the code in R and check your predictions.**  
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+**3. What does `show.legend = FALSE` do? What happens if you remove it?**  
+
+**4. What does the `se` argument to `geom_smooth()` do?**  
+
+**5. Will these two graphs look different? Why/why not?**  
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot() + 
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+**6. Recreate the R code necessary to generate the following graphs.**  
+
+### 3.7.1 Exercises  
+**1. What is the default geom associated with `stat_summary()`? How could you rewrite the previous plot to use that geom function instead of the stat function?**  
+
+**2. What does `geom_col()` do? How is it different to `geom_bar()`?**  
+
+**3. Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?**  
+
+**4. What variables does `stat_smooth()` compute? What parameters control its behaviour?** 
+
+**5. In our proportion bar chart, we need to set `group = 1`. Why? In other words what is the problem with these two graphs?**  
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = ..prop..))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = ..prop..))
+```
+
+### 3.8.1 Exercises  
+**1. What is the problem with this plot? How could you improve it?**  
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + geom_point()
+```
+
+**2. What parameters to `geom_jitter()` control the amount of jittering?**  
+
+**3. Compare and contrast `geom_jitter()` with `geom_count()`.**  
+
+**4. What’s the default position adjustment for `geom_boxplot()`? Create a visualisation of the `mpg` dataset that demonstrates it.**  
+
+### 3.9.1 Exercises
+**1. Turn a stacked bar chart into a pie chart using `coord_polar()`.**  
+
+**2. What does `labs()` do? Read the documentation.**  
+
+**3. What’s the difference between `coord_quickmap()` and `coord_map()`?**  
+
+**4. What does the plot below tell you about the relationship between city and highway mpg? Why is `coord_fixed()` important? What does `geom_abline()` do?**  
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```
+
+### 4.4 Practice
+**1. Why does this code not work?**  
+```{r}
+my_variable <- 10
+my_varıable
+#> Error in eval(expr, envir, enclos): object 'my_varıable' not found
+```
+
+**2. Tweak each of the following R commands so that they run correctly:**  
+```{r}
+library(tidyverse)
+
+ggplot(dota = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+fliter(mpg, cyl = 8)
+filter(diamond, carat > 3)
+```
+
+**3. Press Alt+Shift+K. What happens? How can you get to the same place using the menus?**  
