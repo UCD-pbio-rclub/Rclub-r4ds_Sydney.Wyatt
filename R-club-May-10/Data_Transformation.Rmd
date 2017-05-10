@@ -14,7 +14,7 @@ In-class notes
 
 Missing values: confusing. NA is an unknown number. NaN is a nonsense result like 1/0 whose answer is not a real number.
 
-Use $ to indicate wanting one column like `flights$dep_time` but also in `tidyverse` you don't have to do this because you already called flights in these functions.
+Use `$` to indicate wanting one column like `flights$dep_time` but also in `tidyverse` you don't have to do this because you already called flights in these functions.
 
 
 
@@ -77,27 +77,52 @@ NA^0 will return 1 due to the 0 always returning 1 if anything is raised to it. 
 
 ### 5.3.1 Exercises
 **1. How could use `arrange()` to sort all missing values to the start?**
+```{r}
+arrange(flights, desc(is.na(dep_time)))
+```
+
 
 **2. Sort `flights` to find the most delayed flights. Find the flights that left the earliest.**
+```{r}
+arrange(flights, desc(dep_delay))
+arrange(flights, dep_time)
+```
+
 
 **3. Sort `flights` to find the fastest flights.**
+```{r}
+arrange(flights, air_time)
+```
+
 
 **4. Which flights travelled the longest? Which travelled the shortest?**
+```{r}
+arrange(flights, distance)
+```
+
 
 ### 5.4.1 Exercises
 **1. Brainstorm as many ways as possible to select `dep_time`, `dep_delay`, `arr_time`, and `arr_delay` from `flights`.**
 
 **2. What happens if you include the name of a variable multiple times in a `select()` call?**
+`select()` just ignores the repeats.
 
 **3. What does `one_of()` do? Why might it be helpful in conjunction with this vector?**
 ```{r}
 vars <- c("year", "month", "day", "dep_delay", "arr_delay")
 ```
 
+Misnomer! Should be all_of or is_in instead of one_of. It is another way of doing select.
+
+
+
 **4. Does the result of running the following code surprise you? How do the select helpers deal with case by default? How can you change that default?**
 ```{r}
 select(flights, contains("TIME"))
 ```
+
+Surprising because usually R is case-sensitive. Can change that with `ignore.case`.
+
 
 ### 5.5.2 Exercises
 **1. Currently `dep_time` and `sched_dep_time` are convenient to look at, but hard to compute because they're not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.**
