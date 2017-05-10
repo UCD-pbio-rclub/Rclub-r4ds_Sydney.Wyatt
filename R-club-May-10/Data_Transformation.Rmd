@@ -8,6 +8,16 @@ output:
 library(nycflights13)
 library(tidyverse)
 ```
+In-class notes
+
+`x %in% y` code will select every row where x is a value in y.
+
+Missing values: confusing. NA is an unknown number. NaN is a nonsense result like 1/0 whose answer is not a real number.
+
+Use $ to indicate wanting one column like `flights$dep_time` but also in `tidyverse` you don't have to do this because you already called flights in these functions.
+
+
+
 
 Note: Variable Types  
 `int` = integers  
@@ -31,20 +41,39 @@ These funtions all work similarly.
 3. result is a new data frame  
 
 ### 5.2.4 Exercises  
-**1. Find all the flights that  
+**1. Find all the flights that**  
 > 1. Had an arrival delay of two or more hours  
 > 2. Flew to Houston (`IAH` or `HOU`)  
 > 3. Were operated by United, American, or Delta  
 > 4. Departed in summer (July, August, and September)  
 > 5. Arrived more than two hours late, but didn't leave late  
 > 6. Were delayed by at least an hour, but made up over 30 minutes in flight  
-> 7. Departed between midnight and 6am (inclusive)**
+> 7. Departed between midnight and 6am (inclusive)
+
+```{r}
+filter(flights, arr_delay >= 120)
+filter(flights, dest=='IAH' | dest=='HOU')
+filter(flights, carrier=='UA' | carrier=='AA' | carrier=='DL')
+filter(flights, month %in% c(7,8,9))
+filter(flights, arr_delay >= 120 & dep_delay <= 0)
+filter(flights, dep_delay >= 60 & dep_delay- arr_delay > 30)
+filter(flights, dep_time == 2400 | dep_time <= 0600)
+```
+
+
 
 **2. Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous challenges?**
+```{r}
+filter(flights, between(dep_delay, 0, 120))
+```
+
 
 **3. How many flights have a missing `dep_time`? What other variables are missing? What might these rows represent?**
+Running `summary` on the data set will tell you how many NAs there are in `dep_time`.
+
 
 **4. Why is `NA^0` not missing? Why is `NA | TRUE` not missing? Why is `FALSE & NA` not missing? Can you figure out the general rule?**
+NA^0 will return 1 due to the 0 always returning 1 if anything is raised to it. But for `NA | TRUE` where we are asking NA or True, we're just asking R to pick between "Idk" and "True" so it will always return `TRUE`. Same logic applies to the `FALSE & NA`. But `NA*0` returns `NA` because we still don't know if NA is a real number. If it turns out to be infinity, then R would return NaN but because we don't know if it's infinity it returns NA.
 
 ### 5.3.1 Exercises
 **1. How could use `arrange()` to sort all missing values to the start?**
