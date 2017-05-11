@@ -56,14 +56,38 @@ These funtions all work similarly.
 
 ```{r}
 filter(flights, arr_delay >= 120)
-filter(flights, dest=='IAH' | dest=='HOU')
-filter(flights, carrier=='UA' | carrier=='AA' | carrier=='DL')
-filter(flights, month %in% c(7,8,9))
-filter(flights, arr_delay >= 120 & dep_delay <= 0)
-filter(flights, dep_delay >= 60 & dep_delay- arr_delay > 30)
-filter(flights, dep_time == 2400 | dep_time <= 0600)
+#an arrival delay of two or more hours, in minutes
 ```
 
+```{r}
+filter(flights, dest=='IAH' | dest=='HOU')
+#destination of IAH OR HOU
+```
+
+```{r}
+filter(flights, carrier=='UA' | carrier=='AA' | carrier=='DL')
+#carrier United OR American OR Delta
+```
+
+```{r}
+filter(flights, month %in% c(7,8,9))
+#flights in months 7, 8, 9 (July, August, September)
+```
+
+```{r}
+filter(flights, arr_delay >= 120 & dep_delay <= 0)
+#flights that weren't delayed taking off but landed late
+```
+
+```{r}
+filter(flights, dep_delay >= 60 & dep_delay- arr_delay > 30)
+#flights that left more than an hour late but made up delay to within 30 minutes during flight
+```
+
+```{r}
+filter(flights, dep_time == 2400 | dep_time <= 0600)
+#flights that left at midnight OR before/at 6am in 24hr time
+```
 
 
 **2. Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous challenges?**
@@ -71,18 +95,25 @@ filter(flights, dep_time == 2400 | dep_time <= 0600)
 filter(flights, between(dep_delay, 0, 120))
 ```
 
+_This produces a tibble of flights that have a take off delay between 0 and 120 minutes._
 
 **3. How many flights have a missing `dep_time`? What other variables are missing? What might these rows represent?**
 Running `summary` on the data set will tell you how many NAs there are in `dep_time`.
 
+```{r}
+summary(flights)
+```
+
+_There are 8,255_ `NA` _in_ `dep_time`.
 
 **4. Why is `NA^0` not missing? Why is `NA | TRUE` not missing? Why is `FALSE & NA` not missing? Can you figure out the general rule?**
-NA^0 will return 1 due to the 0 always returning 1 if anything is raised to it. But for `NA | TRUE` where we are asking NA or True, we're just asking R to pick between "Idk" and "True" so it will always return `TRUE`. Same logic applies to the `FALSE & NA`. But `NA*0` returns `NA` because we still don't know if NA is a real number. If it turns out to be infinity, then R would return NaN but because we don't know if it's infinity it returns NA.
+_NA^0 will return 1 due to the 0 always returning 1 if anything is raised to it. But for_ `NA | TRUE` _where we are asking NA or True, we're just asking R to pick between "Idk" and "True" so it will always return_ `TRUE`. _Same logic applies to the_ `FALSE & NA`. _But_ `NA*0` _returns_ `NA` _because we still don't know if NA is a real number. If it turns out to be infinity, then R would return NaN but because we don't know if it's infinity it returns NA._
 
 ### 5.3.1 Exercises
 **1. How could use `arrange()` to sort all missing values to the start?**
 ```{r}
 arrange(flights, desc(is.na(dep_time)))
+#desc means descending order. Because I nested is.na() in desc(), the output will have NA at the top of the list based on NAs in dep_time.
 ```
 
 
@@ -90,6 +121,7 @@ arrange(flights, desc(is.na(dep_time)))
 ```{r}
 arrange(flights, desc(dep_delay))
 arrange(flights, dep_time)
+#following the same logic as above, desc() will sort based on descending order of the departure delay.
 ```
 
 
@@ -107,51 +139,106 @@ arrange(flights, distance)
 
 ### 5.4.1 Exercises
 **1. Brainstorm as many ways as possible to select `dep_time`, `dep_delay`, `arr_time`, and `arr_delay` from `flights`.**
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+```
+
+```{r}
+select(flights, starts_with("dep"), starts_with("arr"))
+#Another way
+```
 
 **2. What happens if you include the name of a variable multiple times in a `select()` call?**
-`select()` just ignores the repeats.
+`select()` _just ignores the repeats._
 
 **3. What does `one_of()` do? Why might it be helpful in conjunction with this vector?**
 ```{r}
 vars <- c("year", "month", "day", "dep_delay", "arr_delay")
 ```
 
-Misnomer! Should be all_of or is_in instead of one_of. It is another way of doing select.
+```{r}
+select(flights, one_of(vars))
+```
 
 
+_Misnomer! This function just selects them all, not one of them as the name implies._
 
 **4. Does the result of running the following code surprise you? How do the select helpers deal with case by default? How can you change that default?**
 ```{r}
 select(flights, contains("TIME"))
 ```
 
-Surprising because usually R is case-sensitive. Can change that with `ignore.case`.
+_Surprising because usually R is case-sensitive. Can change that with_ `ignore.case`.
 
 
 ### 5.5.2 Exercises
 **1. Currently `dep_time` and `sched_dep_time` are convenient to look at, but hard to compute because they're not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.**
-Convert the time to minutes since midnight using `mutate()`.
+_Convert the time to minutes since midnight using_ `mutate()` _or_ `transmutate()`.
+```{r}
+flight_minutes1 <- transmute(flights, minutes_dep_time = dep_time %/% 100 * 60 + dep_time %% 100, minutes_sched_dep_time = sched_dep_time %/% 100 * 60 + sched_dep_time %% 100)
+
+head(flight_minutes1)
+```
 
 **2. Compare `air_time` with `arr_time - dep_time`. What do you expect to see? What do you see? What do you need to do to fix it?**
-Use `transmute()` for a side-by-side comparison. I would expect to see that they are the same. Can use `ifelse()` to handle some of the issues. The issues include handling time zones, taking off and landing on different days. Plotting to visualize the data really helps here.
+_Use_ `transmute()` _for a side-by-side comparison. I would expect to see that they are the same. Can use_ `ifelse()` _to handle some of the issues. The issues include handling time zones, taking off and landing on different days. Plotting to visualize the data really helps here._
+```{r}
+flight_minutes2 <- transmute(flights, minutes_dep_time = dep_time %/% 100 * 60 + dep_time %% 100, minutes_arr_time = arr_time %/% 100 * 60 + arr_time %% 100, minutes_air_time = air_time %/% 100 * 60 + air_time %% 100, calculated_time = ifelse(minutes_arr_time < minutes_dep_time, minutes_arr_time-minutes_dep_time + 1440, minutes_arr_time-minutes_dep_time), air_time)
+
+head(flight_minutes2)
+```
+
+```{r}
+ggplot(flight_minutes2, aes(x=air_time, y=calculated_time)) + geom_point(alpha=0.1)
+```
+
+_Better. I didn't address all problems that could have led to the difference._
 
 **3. Compare `dep_time`, `sched_dep_time`, and `dep_delay`. How would you expect those three numbers to be related?**
-`dep_delay` should be the difference between `dep_time` and `sched_dep_time`. Be sure to convert to minutes and account for the issues in question 2 as well as those flights that leave early.
+`dep_delay` _should be the difference between_ `dep_time` _and_ `sched_dep_time`. _Be sure to convert to minutes and account for the issues in question 2 as well as those flights that leave early._
+
+```{r}
+flight_minutes3 <- transmute(flights, minutes_dep_delay = dep_delay %/% 100 * 60 + dep_time %% 100, minutes_sched_dep_time = sched_dep_time %/% 100 * 60 + sched_dep_time %% 100, calculated_time = ifelse(minutes_dep_delay+120 < minutes_sched_dep_time, minutes_dep_delay-minutes_sched_dep_time + 1440, minutes_dep_delay-minutes_sched_dep_time))
+
+head(flight_minutes3)
+```
+
+```{r}
+ggplot(flight_minutes3, aes(x=minutes_dep_delay, y=minutes_dep_delay-minutes_sched_dep_time)) + geom_point(alpha=0.1)
+```
+
 
 **4. Find the 10 most delayed flights using a ranking function. How do you want to handle ties? Carefully read the documentation for `min_rank()`.**
+```{r}
+#make a smaller dataset for ease of use
+ranking <- select(flights, carrier, flight, sched_dep_time, dep_delay, dep_time)
+
+#do the ranking.
+ranking <- mutate(ranking, delay_rank = min_rank(desc(dep_delay)))
+
+#arrange based on the ranking
+ranking <- arrange(ranking, delay_rank, carrier, flight)
+head(ranking, n=10)
+```
+
+_The ranking isn't quite what I expected. I was expecting to have an actual ranking like 1, 2, 3, etc._
 
 **5. What does `1:3 + 1:10` return? Why?**
 ```{r}
 1:3 + 1:10
 ```
 
-It gives a weird error. And then also 1, 2, and 3 are added to part of `1:10` because the objects are different lengths and `1:3` can't be repeated through the `1:10` because it's not a multiple. What about this:
+_It gives a weird error. And then also 1, 2, and 3 are added to part of_ `1:10` _because the objects are different lengths and_ `1:3` _can't be repeated through the_ `1:10` _because it's not a multiple. What about this:_
 
 ```{r}
 1:3 + 1:9
 ```
 
-This works because 9 is a multiple of 3.
+_This works because 9 is a multiple of 3._
 
 **6. What trigonometric functions does R provide?**
-Use `?trig` to find out!
+_Use_ `?trig` _to find out!_
+```{r}
+?Trig
+```
+
