@@ -16,7 +16,11 @@ Missing values: confusing. NA is an unknown number. NaN is a nonsense result lik
 
 Use `$` to indicate wanting one column like `flights$dep_time` but also in `tidyverse` you don't have to do this because you already called flights in these functions.
 
+`lead()` and `lag()` return the vector offset by 1 either at the front or the end and adds NA there.
 
+`%>%` is a pipe function. So in the terminal it's just `>`or `|`.
+
+For changing the order of the columns, can use `arrange()` but also `mutate()`.
 
 
 Note: Variable Types  
@@ -126,13 +130,28 @@ Surprising because usually R is case-sensitive. Can change that with `ignore.cas
 
 ### 5.5.2 Exercises
 **1. Currently `dep_time` and `sched_dep_time` are convenient to look at, but hard to compute because they're not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.**
+Convert the time to minutes since midnight using `mutate()`.
 
 **2. Compare `air_time` with `arr_time - dep_time`. What do you expect to see? What do you see? What do you need to do to fix it?**
+Use `transmute()` for a side-by-side comparison. I would expect to see that they are the same. Can use `ifelse()` to handle some of the issues. The issues include handling time zones, taking off and landing on different days. Plotting to visualize the data really helps here.
 
 **3. Compare `dep_time`, `sched_dep_time`, and `dep_delay`. How would you expect those three numbers to be related?**
+`dep_delay` should be the difference between `dep_time` and `sched_dep_time`. Be sure to convert to minutes and account for the issues in question 2 as well as those flights that leave early.
 
 **4. Find the 10 most delayed flights using a ranking function. How do you want to handle ties? Carefully read the documentation for `min_rank()`.**
 
 **5. What does `1:3 + 1:10` return? Why?**
+```{r}
+1:3 + 1:10
+```
+
+It gives a weird error. And then also 1, 2, and 3 are added to part of `1:10` because the objects are different lengths and `1:3` can't be repeated through the `1:10` because it's not a multiple. What about this:
+
+```{r}
+1:3 + 1:9
+```
+
+This works because 9 is a multiple of 3.
 
 **6. What trigonometric functions does R provide?**
+Use `?trig` to find out!
