@@ -249,11 +249,60 @@ daily %>%
 **1. Brainstorm at least 5 different ways to assess the typical delay characteristics of a group of flights. Consider the following scenarios:**  
 
 * A flight is 15 minutes early 50% of the time, and 15 minutes late 50% of the time.
-* A flight is always 10 minutes late.  
+```{r}
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+#First way
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(arr_delay==15 | arr_delay==-15)))
+
+#Second way
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(dep_delay==15 | dep_delay==-15)))
+
+#Third way
+not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==15, arr_delay==-15) %>% summarise(arr_delay)
+
+#Fourth way
+not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay==15, dep_delay==-15) %>% summarise(dep_delay)
+```
+
+* A flight is always 10 minutes late. 
+```{r}
+#First way
+not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==10) %>% summarise(arr_delay)
+
+#Second way
+not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay==10) %>% summarise(dep_delay)
+
+```
+
 * A flight is 30 minutes early 50% of the time, and 30 minutes late 50% of the time.  
-* 99% of the time a flight is on time. 1% of the time it's 2 hours late.  
+```{r}
+#First way
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(arr_delay==30 | arr_delay==-30)))
+
+#Second way
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(dep_delay==30 | dep_delay==-30)))
+
+#Third way
+not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==30, arr_delay==-30) %>% summarise(arr_delay)
+
+#Fourth way
+not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay==30, dep_delay==-30) %>% summarise(dep_delay)
+```
+
+* 99% of the time a flight is on time. 1% of the time it's 2 hours late. 
+```{r}
+#First way
+not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay >= 120) %>% summarise(onepercent = quantile(arr_delay, 0.01))
+
+#Second way
+not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay >= 120) %>% summarise(onepercent = quantile(dep_delay, 0.01))
+
+```
+
 
 **Which is more important, arrival delay or departure delay?**  
+_Personally I think arrival delay is more important because it is mor inconvenient than bein delayed departing._
 
 **2. Come up with another approach that will give you the same outpt as `not_cancelled %>% count(tailnum, wt = distance)` without using `count()`.**
 
