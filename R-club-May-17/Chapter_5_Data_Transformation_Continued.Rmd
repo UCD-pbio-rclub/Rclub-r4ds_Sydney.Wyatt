@@ -304,15 +304,34 @@ not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay >= 120) %>% su
 **Which is more important, arrival delay or departure delay?**  
 _Personally I think arrival delay is more important because it is mor inconvenient than bein delayed departing._
 
-**2. Come up with another approach that will give you the same outpt as `not_cancelled %>% count(tailnum, wt = distance)` without using `count()`.**
+**2. Come up with another approach that will give you the same outpt as `not_cancelled %>% count(tailnum, wt = distance)` without using `count()`.**  
+_This "sums" the total miles the plane flew. There are other ways to do that._
+```{r}
+not_cancelled %>% group_by(tailnum, distance) %>% summarise(tailnum)
+```
+
 
 **3. Our definition of cancelled flights `is.na(dep_delay) | is.na(arr_delay)` is slightly suboptimal. Why? Which is the most important column?**  
+_If a flight is perfectly on time it will have_ `NA` _for both departure delay and arrival delay. If_ `is.na(air_time)` _was included, this would confirm the flight did not take place at all._
 
 **4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?**
+```{r}
+cancelled <- flights %>% filter(is.na(dep_delay), is.na(arr_delay))
+
+cancelled %>% group_by(year, month, day) %>% summarise(nofly = count(air_time))
+
+not_cancelled %>% group_by(year, month, day) %>% summarise(avg_delay = mean(arr_delay))
+```
+
 
 **5. Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about `flights %>% group_by(carrier, dest) %>% summarise(n())`.**
+```{r}
+not_cancelled %>% group_by(carrier) %>% filter(dep_delay > 0, arr_delay > 0) %>% arrange(desc(dep_delay), desc(arr_delay)) %>% summarise(n())
+```
+
 
 **6. What does the `sort` argument to `count()` do. When might you use it?**
+_If sort is set to TRUE, it will sort output in descending order of n. This might be useful in instances where you want a descending order of data but either don't want to or forgot how to do it with the arrange and desc commands._
 
 ##5.7 Grouped mutates and filters  
 
