@@ -689,7 +689,24 @@ not_cancelled %&gt;% group_by(year, month, day) %&gt;% filter(dep_delay &gt;= 12
 <em>Personally I think arrival delay is more important because it is mor inconvenient than bein delayed departing.</em></p>
 <p><strong>2. Come up with another approach that will give you the same outpt as <code>not_cancelled %&gt;% count(tailnum, wt = distance)</code> without using <code>count()</code>.</strong><br />
 <em>This “sums” the total miles the plane flew. There are other ways to do that. This throws:</em> <code>Error in summarise_impl(.data, dots) : cannot modify grouping variable</code>. <em>I understand this error means I can’t summarise by the same thing I grouped by, but not sure how else to go about this.</em></p>
-<pre class="r"><code>#not_cancelled %&gt;% group_by(tailnum, distance) %&gt;% summarise(tailnum)</code></pre>
+<pre class="r"><code>not_cancelled %&gt;% count(tailnum, wt = distance)</code></pre>
+<pre><code>## # A tibble: 4,037 × 2
+##    tailnum      n
+##      &lt;chr&gt;  &lt;dbl&gt;
+## 1   D942DN   3418
+## 2   N0EGMQ 239143
+## 3   N10156 109664
+## 4   N102UW  25722
+## 5   N103US  24619
+## 6   N104UW  24616
+## 7   N10575 139903
+## 8   N105UW  23618
+## 9   N107US  21677
+## 10  N108UW  32070
+## # ... with 4,027 more rows</code></pre>
+<pre class="r"><code>#This gives total distance flown by each plane
+
+#not_cancelled %&gt;% group_by(tailnum, distance) %&gt;% summarise(tailnum)</code></pre>
 <p><strong>3. Our definition of cancelled flights <code>is.na(dep_delay) | is.na(arr_delay)</code> is slightly suboptimal. Why? Which is the most important column?</strong><br />
 <em>If a flight is perfectly on time it will have</em> <code>NA</code> <em>for both departure delay and arrival delay. If</em> <code>is.na(air_time)</code> <em>was included, this would confirm the flight did not take place at all.</em></p>
 <p><strong>4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?</strong></p>
@@ -1042,12 +1059,12 @@ scrambled &lt;- df[sample(nrow(df)), ]
 wrong &lt;- mutate(scrambled, running = cumsum(value))
 arrange(wrong, year)</code></pre>
 <pre><code>##   year value running
-## 1 2000     0      35
-## 2 2001     1      35
-## 3 2002     4      39
-## 4 2003     9      34
-## 5 2004    16      55
-## 6 2005    25      25</code></pre>
+## 1 2000     0      16
+## 2 2001     1      21
+## 3 2002     4      20
+## 4 2003     9      30
+## 5 2004    16      16
+## 6 2005    25      55</code></pre>
 <pre class="r"><code>right &lt;- mutate(scrambled, running = order_by(year, cumsum(value)))
 arrange(right, year)</code></pre>
 <pre><code>##   year value running

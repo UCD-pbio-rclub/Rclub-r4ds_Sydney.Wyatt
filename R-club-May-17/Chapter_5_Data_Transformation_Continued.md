@@ -1,7 +1,7 @@
 # Chapter 5: Data Transformation, Continued
 
 
-##5.6 Grouped summaries with `summarise()`
+## 5.6 Grouped summaries with `summarise()`
 
 `summarise()` collapses data frames to a single row. Example:
 
@@ -43,7 +43,7 @@ summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 ## # ... with 355 more rows
 ```
 
-###5.6.1 Combining multiple operations with the pipe
+### 5.6.1 Combining multiple operations with the pipe
 
 Can do it this way:
 
@@ -89,11 +89,11 @@ delays <- flights %>%
 
 This reads group, then summarise, then filter. This vastly improves the readability of the code. BUT `ggplot2` does not work with the pipe.
 
-###5.6.2 Missing values
+### 5.6.2 Missing values
 
 All aggregation functions have an `na.rm` argument. 
 
-###5.6.3 Counts
+### 5.6.3 Counts
 
 It is good practice to either count `n()` or count non-missing values `sum(!is.na(x))` to make sure conclusions aren't drawn on small amounts of data. Example:
 
@@ -199,7 +199,7 @@ batters %>%
 ## # ... with 18,649 more rows
 ```
 
-###5.6.4 Useful summary functions
+### 5.6.4 Useful summary functions
 
 Measures of location: `mean(x)` which is the sum divided by the length or `median(x)` where 50% of `x` is above it and 50% is below it.  
 
@@ -485,7 +485,7 @@ not_cancelled %>%
 ## # ... with 355 more rows
 ```
 
-###5.6.5 Grouping by multiple variables
+### 5.6.5 Grouping by multiple variables
 
 When grouping by multiple variables, each summary peels off one level of the grouping, making it easy to roll up a data set:
 
@@ -550,7 +550,7 @@ daily <- group_by(flights, year, month, day)
 
 It's ok to progressively roll up sums and counts, but need to think about weighting means and variances and not possible to do it exactly for rank-based statistics like the median. The sum of groupwise sums is the overall sum, but the median of groupwise medians is not the overall median.
 
-###5.6.6 Ungrouping
+### 5.6.6 Ungrouping
 
 To  remove grouping, and return to operations on ungrouped data, use `ungroup()`.
 
@@ -567,7 +567,7 @@ daily %>%
 ## 1  336776
 ```
 
-###5.6.7 Exercises
+### 5.6.7 Exercises
 
 **1. Brainstorm at least 5 different ways to assess the typical delay characteristics of a group of flights. Consider the following scenarios:**  
 
@@ -793,6 +793,29 @@ _Personally I think arrival delay is more important because it is mor inconvenie
 _This "sums" the total miles the plane flew. There are other ways to do that. This throws:_ `Error in summarise_impl(.data, dots) : cannot modify grouping variable`. _I understand this error means I can't summarise by the same thing I grouped by, but not sure how else to go about this._
 
 ```r
+not_cancelled %>% count(tailnum, wt = distance)
+```
+
+```
+## # A tibble: 4,037 × 2
+##    tailnum      n
+##      <chr>  <dbl>
+## 1   D942DN   3418
+## 2   N0EGMQ 239143
+## 3   N10156 109664
+## 4   N102UW  25722
+## 5   N103US  24619
+## 6   N104UW  24616
+## 7   N10575 139903
+## 8   N105UW  23618
+## 9   N107US  21677
+## 10  N108UW  32070
+## # ... with 4,027 more rows
+```
+
+```r
+#This gives total distance flown by each plane
+
 #not_cancelled %>% group_by(tailnum, distance) %>% summarise(tailnum)
 ```
 
@@ -864,7 +887,7 @@ not_cancelled %>% group_by(carrier) %>% filter(dep_delay > 0, arr_delay > 0) %>%
 **6. What does the `sort` argument to `count()` do. When might you use it?**
 _If sort is set to TRUE, it will sort output in descending order of n. This might be useful in instances where you want a descending order of data but either don't want to or forgot how to do it with the arrange and desc commands._
 
-##5.7 Grouped mutates and filters  
+## 5.7 Grouped mutates and filters  
 
 Grouping is most useful with `summarise()` but there are also useful operations with `mutate()` and `filter()`.
 
@@ -960,7 +983,7 @@ popular_dests %>%
 
 A grouped filter is a grouped mutate followed by an ungrouped filter. Window functions are most useful here vs the summary functions that are used for summaries.
 
-###Window Functions and grouped mutate/filter
+### Window Functions and grouped mutate/filter
 
 A window function is a variation on an aggregation function. Examples: `cumsum() cummean() rank() lead() lag()`.
 
@@ -1303,12 +1326,12 @@ arrange(wrong, year)
 
 ```
 ##   year value running
-## 1 2000     0      35
-## 2 2001     1      35
-## 3 2002     4      39
-## 4 2003     9      34
-## 5 2004    16      55
-## 6 2005    25      25
+## 1 2000     0      16
+## 2 2001     1      21
+## 3 2002     4      20
+## 4 2003     9      30
+## 5 2004    16      16
+## 6 2005    25      55
 ```
 
 ```r
@@ -1489,7 +1512,7 @@ mutate(players, G_z = (G - mean(G)) / sd(G))
 
 The rest of the vignette is about window functions in SQL which is not applicable to this lesson.
 
-###5.7.1 Exercises  
+### 5.7.1 Exercises  
 
 **1. Refer back to the lists of useful mutate and filtering functions. Describe how each operation changes when you combine it with grouping.**  
 
