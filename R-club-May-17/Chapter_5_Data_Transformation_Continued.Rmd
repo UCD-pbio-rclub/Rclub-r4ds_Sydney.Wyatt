@@ -465,12 +465,36 @@ The rest of the vignette is about window functions in SQL which is not applicabl
 ###5.7.1 Exercises  
 
 **1. Refer back to the lists of useful mutate and filtering functions. Describe how each operation changes when you combine it with grouping.**  
+```{r}
+#Grouping and filtering
+nov_dec <- not_cancelled %>% group_by(year, month, day) %>% filter(not_cancelled, month %in% c(11,12))
+
+#Grouping and mutating
+flights_sml <- not_cancelled %>% group_by(year, month, day, ends_with("delay"), distance, air_time) %>% mutate(gain = arr_delay - dep_delay, speed = distance/air_time *60)
+```
+
 
 **2. Which plane (`tailnum`) has the worst on-time record?**  
+```{r}
+not_cancelled %>% group_by(year, month, day) %>% filter(rank(desc(arr_delay)) < 10)
+```
+
 
 **3. What time of day should you fly if you want to avoid delays as much as possible?**
+```{r}
+not_cancelled %>% group_by(year, month, day) %>% filter(rank(arr_delay) | rank(dep_delay))
+```
+
 
 **4. For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.**
+```{r}
+#Total delay
+not_cancelled %>% group_by(dest) %>% mutate(total_delay = arr_delay + dep_delay) %>% select(year:day, dest, total_delay)
+
+#proportion total delay for destination
+not_cancelled %>% group_by(year, month, day) %>% mutate(prop_delay = arr_delay / sum(arr_delay)) %>% select(year:day, dest, prop_delay)
+```
+
 
 **5. Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using `lag()` explore how the delay of a flight is related to the delay of the immediately preceding flight.**  
 
