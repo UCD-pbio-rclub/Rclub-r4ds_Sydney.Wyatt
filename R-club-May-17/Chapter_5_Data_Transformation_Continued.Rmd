@@ -66,6 +66,9 @@ All aggregation functions have an `na.rm` argument.
 
 It is good practice to either count `n()` or count non-missing values `sum(!is.na(x))` to make sure conclusions aren't drawn on small amounts of data. Example:
 ```{r}
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
 delays <- not_cancelled %>% 
   group_by(tailnum) %>% 
   summarise(
@@ -253,10 +256,10 @@ daily %>%
 not_cancelled <- flights %>% 
   filter(!is.na(dep_delay), !is.na(arr_delay))
 #First way
-not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(arr_delay==15 | arr_delay==-15)))
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(arr_delay==15 | arr_delay==-15))
 
 #Second way
-not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(dep_delay==15 | dep_delay==-15)))
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(dep_delay==15 | dep_delay==-15))
 
 #Third way
 not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==15, arr_delay==-15) %>% summarise(arr_delay)
@@ -265,23 +268,23 @@ not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==15, arr_delay
 not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay==15, dep_delay==-15) %>% summarise(dep_delay)
 ```
 
-* A flight is always 10 minutes late. 
+* A flight is always 10 minutes late. _These throw:_ `Error in summarise_impl(.data, dots) : expecting a single value`. _Why aren't these a single value?_   
 ```{r}
 #First way
-not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==10) %>% summarise(arr_delay)
+#not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==10) %>% summarise(arr_delay)
 
 #Second way
-not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay==10) %>% summarise(dep_delay)
+#not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay==10) %>% summarise(dep_delay)
 
 ```
 
 * A flight is 30 minutes early 50% of the time, and 30 minutes late 50% of the time.  
 ```{r}
 #First way
-not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(arr_delay==30 | arr_delay==-30)))
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(arr_delay==30 | arr_delay==-30))
 
 #Second way
-not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(filter(dep_delay==30 | dep_delay==-30)))
+not_cancelled %>% group_by(year, month, day) %>% summarise(median = median(dep_delay==30 | dep_delay==-30))
 
 #Third way
 not_cancelled %>% group_by(year, month, day) %>% filter(arr_delay==30, arr_delay==-30) %>% summarise(arr_delay)
@@ -305,9 +308,9 @@ not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay >= 120) %>% su
 _Personally I think arrival delay is more important because it is mor inconvenient than bein delayed departing._
 
 **2. Come up with another approach that will give you the same outpt as `not_cancelled %>% count(tailnum, wt = distance)` without using `count()`.**  
-_This "sums" the total miles the plane flew. There are other ways to do that._
+_This "sums" the total miles the plane flew. There are other ways to do that. This throws:_ `Error in summarise_impl(.data, dots) : cannot modify grouping variable`. _I understand this error means I can't summarise by the same thing I grouped by, but not sure how else to go about this._
 ```{r}
-not_cancelled %>% group_by(tailnum, distance) %>% summarise(tailnum)
+#not_cancelled %>% group_by(tailnum, distance) %>% summarise(tailnum)
 ```
 
 
@@ -315,10 +318,12 @@ not_cancelled %>% group_by(tailnum, distance) %>% summarise(tailnum)
 _If a flight is perfectly on time it will have_ `NA` _for both departure delay and arrival delay. If_ `is.na(air_time)` _was included, this would confirm the flight did not take place at all._
 
 **4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?**
+
+_Trying to do anything with cancelled throws:_ `Error in summarise_impl(.data, dots) : no applicable method for 'group_by_' applied to an object of class "c('double', 'numeric')"` _which I have no idea what that means._
 ```{r}
 cancelled <- flights %>% filter(is.na(dep_delay), is.na(arr_delay))
 
-cancelled %>% group_by(year, month, day) %>% summarise(nofly = count(air_time))
+#cancelled %>% group_by(year, month, day) %>% summarise(nofly = count(air_time))
 
 not_cancelled %>% group_by(year, month, day) %>% summarise(avg_delay = mean(arr_delay))
 ```
@@ -338,6 +343,13 @@ _If sort is set to TRUE, it will sort output in descending order of n. This migh
 Grouping is most useful with `summarise()` but there are also useful operations with `mutate()` and `filter()`.
 ```{r}
 #Find the worst members of each group:
+flights_sml <- select(flights, 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+
 flights_sml %>% 
   group_by(year, month, day) %>%
   filter(rank(desc(arr_delay)) < 10)
@@ -467,42 +479,64 @@ The rest of the vignette is about window functions in SQL which is not applicabl
 **1. Refer back to the lists of useful mutate and filtering functions. Describe how each operation changes when you combine it with grouping.**  
 ```{r}
 #Grouping and filtering
-nov_dec <- not_cancelled %>% group_by(year, month, day) %>% filter(not_cancelled, month %in% c(11,12))
+nov_dec <- not_cancelled %>% group_by(year, month, day) %>% filter(month %in% c(11,12))
+nov_dec
 
 #Grouping and mutating
-flights_sml <- not_cancelled %>% group_by(year, month, day, ends_with("delay"), distance, air_time) %>% mutate(gain = arr_delay - dep_delay, speed = distance/air_time *60)
+flights_sml <- not_cancelled %>% group_by(year, month, day) %>% mutate(gain = arr_delay - dep_delay, speed = distance/air_time *60)
+flights_sml
 ```
 
+_Not sure how these operations change when using grouping, but I can recreate the same variables as before with piping and grouping._
 
 **2. Which plane (`tailnum`) has the worst on-time record?**  
 ```{r}
-not_cancelled %>% group_by(year, month, day) %>% filter(rank(desc(arr_delay)) < 10)
+not_cancelled %>% group_by(tailnum) %>% filter(rank(desc(arr_delay)) < 10) %>% select(year:day, tailnum, arr_delay)
 ```
 
 
 **3. What time of day should you fly if you want to avoid delays as much as possible?**
 ```{r}
-not_cancelled %>% group_by(year, month, day) %>% filter(rank(arr_delay) | rank(dep_delay))
+not_cancelled %>% group_by(sched_dep_time) %>% filter(rank(arr_delay) | rank(dep_delay)) %>% select(year:day, sched_dep_time, dep_delay, arr_delay)
 ```
 
 
 **4. For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.**
 ```{r}
-#Total delay
+#Total delay per destination
 not_cancelled %>% group_by(dest) %>% mutate(total_delay = arr_delay + dep_delay) %>% select(year:day, dest, total_delay)
 
-#proportion total delay for destination
-not_cancelled %>% group_by(year, month, day) %>% mutate(prop_delay = arr_delay / sum(arr_delay)) %>% select(year:day, dest, prop_delay)
+#proportion total delay for destination for each flight
+not_cancelled %>% group_by(dest) %>% mutate(prop_delay = arr_delay / sum(arr_delay)) %>% select(year:day, dest, prop_delay)
 ```
 
 
-**5. Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using `lag()` explore how the delay of a flight is related to the delay of the immediately preceding flight.**  
+**5. Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using `lag()` explore how the delay of a flight is related to the delay of the immediately preceding flight.** 
+_Still confused on how lag works... When would we need this and why?_
+```{r}
+not_cancelled %>% group_by(year, month, day) %>% filter(dep_delay > 0) %>% mutate(delay_effect = dep_delay - lag(dep_delay)) %>% select(year:day, sched_dep_time, dep_time, dep_delay, delay_effect)
+```
+
 
 **6. Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?**  
+_The confusing part is computing air time relative to the shortest flight to the destination. Not sure how to do that._
+```{r}
+#Use arr_time - dep_time and compared to air_time
+not_cancelled %>% group_by(dest) %>% mutate(calc_flight = arr_time - dep_time) %>% select(dest, air_time, calc_flight)
+```
+
 
 **7. Find all destinations that are flown by at least two carriers. Use that information to rank the carriers.**  
+```{r}
+not_cancelled %>% group_by(dest) %>% summarise(carriers = n_distinct(carrier)) %>% filter(carriers >=2) %>% arrange(desc(carriers))
+```
 
-**8. For each plane, count the number of flights before the first delay of greater than 1 hour.**  
+
+**8. For each plane, count the number of flights before the first delay of greater than 1 hour.** 
+```{r}
+not_cancelled %>% group_by(tailnum) %>% filter(arr_delay <= 60 | dep_delay <= 60) %>% count(tailnum)
+```
+
 
 #Chapter 6: Workflow: scripts  
 
