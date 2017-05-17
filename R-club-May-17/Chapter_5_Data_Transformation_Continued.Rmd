@@ -335,6 +335,133 @@ _If sort is set to TRUE, it will sort output in descending order of n. This migh
 
 ##5.7 Grouped mutates and filters  
 
+Grouping is most useful with `summarise()` but there are also useful operations with `mutate()` and `filter()`.
+```{r}
+#Find the worst members of each group:
+flights_sml %>% 
+  group_by(year, month, day) %>%
+  filter(rank(desc(arr_delay)) < 10)
+
+#Find all groups bigger than a threshold:
+popular_dests <- flights %>% 
+  group_by(dest) %>% 
+  filter(n() > 365)
+popular_dests
+
+#Standardize to compute per group metrics
+popular_dests %>% 
+  filter(arr_delay > 0) %>% 
+  mutate(prop_delay = arr_delay / sum(arr_delay)) %>% 
+  select(year:day, dest, arr_delay, prop_delay)
+```
+
+A grouped filter is a grouped mutate followed by an ungrouped filter. Window functions are most useful here vs the summary functions that are used for summaries.
+
+###Window Functions and grouped mutate/filter
+
+A window function is a variation on an aggregation function. Examples: `cumsum() cummean() rank() lead() lag()`.
+```{r}
+#Some uses and examples
+batting <- select(tbl_df(Batting), playerID, yearID, teamID, G, AB:H) 
+batting <- arrange(batting, playerID, yearID, teamID)
+players <- group_by(batting, playerID)
+
+# For each player, find the two years with most hits
+filter(players, min_rank(desc(H)) <= 2 & H > 0)
+# Within each player, rank each year by the number of games played
+mutate(players, G_rank = min_rank(G))
+
+# For each player, find every year that was better than the previous year
+filter(players, G > lag(G))
+# For each player, compute avg change in games played per year
+mutate(players, G_change = (G - lag(G)) / (yearID - lag(yearID)))
+
+# For each player, find all where they played more games than average
+filter(players, G > mean(G))
+# For each, player compute a z score based on number of games played
+mutate(players, G_z = (G - mean(G)) / sd(G))
+```
+
+Ranking and ordering functions: `row_number(), min_rank(), dense_rank(), cume_dist(), percent_rank(), ntile()`. These take a vector to order by and return various types of rank. Use `desc()` to rank from highest to lowest. This is unrelated to aggregation functions.  
+```{r}
+x <- c(1, 1, 2, 2, 2)
+
+row_number(x)
+min_rank(x)
+dense_rank(x)
+cume_dist(x) #Porportion of values less than or equal to current value
+percent_rank(x)
+
+# Selects best two years
+filter(players, min_rank(desc(G)) < 2)
+
+# Selects best 10% of years
+filter(players, cume_dist(desc(G)) < 0.1)
+
+by_team_player <- group_by(batting, teamID, playerID)
+by_team <- summarise(by_team_player, G = sum(G))
+by_team_quartile <- group_by(by_team, quartile = ntile(G, 4)) #ntile divides data into n evenly sized buckets
+summarise(by_team_quartile, mean(G))
+```
+
+
+Offsets: `lead(), lag()`. Allows access of the previous and next values in a vector. Makes it easy to compute differences and trends. Produce offset versions of an input vector that is either ahead of or behind the original vector. `lag()` is more convenient than `diff()` because for `n` inputes, `diff()` returns `n-1` outputs. Optional `order_by()` argument. If set, instead of using the row order to determine order, the functions will use another variable. This is important with unsorted data or you want to sort one way and lag another. Unrelated to aggregation functions as well.  
+```{r}
+x <- 1:5
+lead(x)
+lag(x)
+
+#Compute differences or percent changes
+# Compute the relative change in games played
+mutate(players, G_delta = G - lag(G))
+
+#Find when a value changes
+# Find when a player changed teams
+filter(players, teamID != lag(teamID))
+
+#What happens if I don't specify order_by
+df <- data.frame(year = 2000:2005, value = (0:5) ^ 2)
+scrambled <- df[sample(nrow(df)), ]
+
+wrong <- mutate(scrambled, running = cumsum(value))
+arrange(wrong, year)
+right <- mutate(scrambled, running = order_by(year, cumsum(value)))
+arrange(right, year)
+
+```
+
+
+Cumulative aggregates: `cumsum(), cummin(), cummax(), cumall(), cumany(), cummean()`. `cumany()` and `cumall()` are useful for selecting all rows up to or all rows after a condition. Can also give order with `order_by()` or `with_order()` as a separate function.   
+```{r}
+#Find all records for a player after they played a year with 150 games
+filter(players, cumany(G > 150))
+
+x <- 1:10
+y <- 10:1
+order_by(y, cumsum(x))
+```
+
+
+Rolling aggregates: implemented in other packages.  
+
+Recycled aggregates: an aggregate is repeated to match the length of the input. Not needed in R because R does that automatically. Easy to select values that are higher or lower than a summary.  
+```{r}
+#Find all records greater than the mean or less than the median
+filter(players, G > mean(G))
+filter(players, G < median(G))
+
+#ntile can be used to achieve same effect as medain or quantile
+filter(players, ntile(G, 2) == 2)
+
+#Compute "career year" or the number of years a player has played since they entered the league
+mutate(players, career_year = yearID - min(yearID) + 1)
+
+#Or compute a z-score
+mutate(players, G_z = (G - mean(G)) / sd(G))
+```
+
+The rest of the vignette is about window functions in SQL which is not applicable to this lesson.
+
 ###5.7.1 Exercises  
 
 **1. Refer back to the lists of useful mutate and filtering functions. Describe how each operation changes when you combine it with grouping.**  
