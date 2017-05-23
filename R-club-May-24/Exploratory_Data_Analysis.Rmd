@@ -215,13 +215,81 @@ ggplot(diamonds) +
 
 _Since I know `y` has outliers, I will use that for exploring these. If bin width is left unspecified, R will let you know how many bins it made based on the values present. In this case it made 30 and wants better bins specified. `ylim()` limits the y values, so in this case I effectively filtered out anything with more than 50 obervations as well as rows that were missing data. With `xlim()` I can effectively filter out the outliers past 10. to try to get half a bar to show, I know that if I limit the y-axis with_ `coord_cartesian` _then I can zoom-in and see that the bars seem to extend above the graph. If I limit the x-axis with `xlim()` by attempting to zoom in to half a bin width that I set, this gives me a blank graph because `binwidth` is still trying to subgroup the data within the x limits given. I'm not sure how to zoom in to half a bar along the x-axis._
 
+## 7.4 Missing Values  
+
+Two options to get rid of unusual values:  
+1. Drop entire row with strange values. BUT just because one measurement is invalid doesn't mean the rest are.  
+```{r}
+diamonds2 <- diamonds %>% 
+  filter(between(y, 3, 20))
+```
+
+2. Replace unusual values with missing values. Easiesy way shown below with `mutate()` to replace the variable with `ifelse()` to help replace all unusual values (useful if there is a large chunk together like here).  
+```{r}
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+```
+
+`ifelse()` has three arguments. `test` should be logical - ie `TRUE` or `FALSE`. The second argument `yes` is what happens when the `test` is `TRUE` and the third argument `no` is what happens when `test` is `FALSE`. `ggplot` then automatically removes missing values when plotting and gives a warning that it did so:  
+```{r}
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) + 
+  geom_point()
+```
+
+Can supress the warning too:
+```{r}
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) + 
+  geom_point(na.rm = TRUE)
+```
+
+Sometimes though you want to compare observations with missing values to observations with recorded values, such as cancelled vs non-cancelled flights:  
+```{r}
+nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  ) %>% 
+  ggplot(mapping = aes(sched_dep_time)) + 
+    geom_freqpoly(mapping = aes(colour = cancelled), binwidth = 1/4)
+```
+
+Can improve this plot later. Needs improvement because # non-cancelled >>> # cancelled.  
+
 ### 7.4.1 Exercises
 
-**1. What happens to missing values in a historgram? What happens to missing values in a bar chart? Why is there a difference?**
+**1. What happens to missing values in a historgram? What happens to missing values in a bar chart? Why is there a difference?**  
+_Missing values in a histogram are automatically excluded and a warning is provided saying so. Missing values in a bar chart are also excluded._  
+```{r}
+ggplot(data = diamonds2, mapping = aes(x = y)) + 
+  labs(title = "Histogram") + 
+  geom_histogram(binwidth = 0.5)
 
-**2. What does `na.rm = TRUE` do in `mean()` and `sum()`?**
+ggplot(data = diamonds2, mapping = aes(x = y)) + 
+  labs(title = "Bar Chart") + 
+  geom_bar(binwidth = 0.5)
+```
 
-### 7.5.1.1 Exercises
+
+**2. What does `na.rm = TRUE` do in `mean()` and `sum()`?**  
+_`na.rm = TRUE` usually silences the warning that missing values were excluded. Let's explore this in `mean()` and `sum()`:_  
+```{r}
+x <- c(2,245,1356,1939,NA,NA,NA,234567,1,1234,0686,NA)
+#Mean
+mean(x)
+#Sum
+sum(x)
+
+#Mean ignoring missing values
+mean(x, na.rm = TRUE)
+#Sum ignoring missing values
+sum(x, na.rm = TRUE)
+```
+
+_The default in `sum()` and `mean()` is to include all numbers in the dataset and if there are missing values, it will just return `NA`. Therefore for these functions, `na.rm = TRUE` tells the functions to ignore missing values when analyzing the data._
+
+#### 7.5.1.1 Exercises
 **1. Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.**
 
 **2. What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?**
@@ -234,7 +302,7 @@ _Since I know `y` has outliers, I will use that for exploring these. If bin widt
 
 **6. If you have a small dataset, it’s sometimes useful to use `geom_jitter()` to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to `geom_jitter()`. List them and briefly describe what each one does.**
 
-### 7.5.2.1 Exercises
+#### 7.5.2.1 Exercises
 
 **1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?**
 
@@ -242,7 +310,7 @@ _Since I know `y` has outliers, I will use that for exploring these. If bin widt
 
 **3. Why is it slightly better to use `aes(x = color, y = cut)` rather than `aes(x = cut, y = color)` in the example above?**
 
-### 7.5.3.1 Exercises
+#### 7.5.3.1 Exercises
 
 **1. Instead of summarising the conditional distribution with a boxplot, you could use a frequency polygon. What do you need to consider when using `cut_width()` vs `cut_number()`? How does that impact a visualisation of the 2d distribution of carat and price?**
 
