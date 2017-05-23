@@ -287,12 +287,90 @@ mean(x, na.rm = TRUE)
 sum(x, na.rm = TRUE)
 ```
 
-_The default in `sum()` and `mean()` is to include all numbers in the dataset and if there are missing values, it will just return `NA`. Therefore for these functions, `na.rm = TRUE` tells the functions to ignore missing values when analyzing the data._
+_The default in `sum()` and `mean()` is to include all numbers in the dataset and if there are missing values, it will just return `NA`. Therefore for these functions, `na.rm = TRUE` tells the functions to ignore missing values when analyzing the data._  
+
+## 7.5 Covariation  
+
+covariation = tendency for values of two or more variables to var together in a related way  
+
+### 7.5.1 A categorical and continuous variable  
+
+Explore distribution of a continous variable broken down by a categorical variable. Default of `geom_freqpoly()` is not useful for this because height is given by count:  
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+Hard to tell the difference because the overall counts differ so much:  
+```{r}
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = cut))
+```
+
+Need to display density on y-axis instead of count! This standardizes the count so the area under the line is equal to 1:  
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+Can also view this type of covariation with boxplots. Boxplots consist of:  
+* a box from the 25th percentile to 75th percentile (IQR) with a line in the middle (median; 50th percentile). This gives an idea of the spread.  
+* visual points that show observations that fall more than 1.5xIGQ from either edge of the box (outliers).  
+* lines extending from the end of the box to the farthest non-outlier point.  
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_boxplot()
+```
+
+Less information about the distribution but easier to compare.  
+
+`cut` is an ordered factor: fair < good < very good < premium < ideal. Most categorical variables don't have this kind of intrinsic order, so you can reorder them to get more information:  
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) +
+  geom_boxplot()
+```
+
+Versus:  
+```{r}
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy))
+```
+
+With long variable names, flip the graph:  
+```{r}
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy)) +
+  coord_flip()
+```
+
 
 #### 7.5.1.1 Exercises
-**1. Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.**
+**1. Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.**  
+```{r}
+nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  ) %>% 
+  ggplot(mapping = aes(x=cancelled, y=sched_dep_time)) + 
+    geom_boxplot()
+```
 
-**2. What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?**
+
+**2. What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?**  
+```{r}
+ggplot(diamonds, mapping = aes(x = carat, fill = cut)) + 
+  geom_histogram(position = position_dodge() ,binwidth = 0.5)
+
+ggplot(diamonds, mapping = aes(price, fill = cut)) + 
+  geom_histogram(position = position_dodge(), binwidth = 2000)
+```
+
+_On average, th diamonds with a lower cut are 1 carat._
+
 
 **3. Install the ggstance package, and create a horizontal boxplot. How does this compare to using `coord_flip()`?**
 
