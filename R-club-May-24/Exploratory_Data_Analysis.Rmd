@@ -9,7 +9,6 @@ output:
 
 ```{r, include=FALSE}
 library(tidyverse)
-library(diamonds)
 library(nycflights13)
 ```
 
@@ -130,13 +129,91 @@ Good practice to repeat analysis with and without outliers. If the outliers have
 
 ### 7.3.4 Exercises
 
-**1. Explore the distribution of each of the x, y, and z variables in `diamonds`. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.**
+**1. Explore the distribution of each of the x, y, and z variables in `diamonds`. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.**  
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = x), binwidth = 0.5)
 
-**2. Explore the distribution of `price`. Do you discover anything unusual or surprising? (Hint: Carefully think about the `binwidth` and make sure you try a wide range of values.)**
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5)
 
-**3. How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?**
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = z), binwidth = 0.5)
 
-**4. Compare and contrast `coord_cartesian()` vs `xlim()` or `ylim()` when zooming in on a histogram. What happens if you leave `binwidth` unset? What happens if you try and zoom so only half a bar shows?**
+#Altogether
+ggplot(data = diamonds) +
+  geom_freqpoly(mapping = aes(x=x, colour = "x"), binwidth = 0.1) + 
+  geom_freqpoly(mapping = aes(x=y, colour = "y"), binwidth = 0.1) + 
+  geom_freqpoly(mapping = aes(x=z, colour = "z"), binwidth = 0.1)
+```
+
+_Well there are definitely outliers in `y`. I think `x` is the depth, `y` is the length, and `z` is the width._
+
+**2. Explore the distribution of `price`. Do you discover anything unusual or surprising? (Hint: Carefully think about the `binwidth` and make sure you try a wide range of values.)**  
+```{r}
+ggplot(diamonds, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 500)
+
+ggplot(diamonds, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 1000)
+
+ggplot(diamonds, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 5000)
+```
+
+
+_There are 30 bins, which I found when I graphed the distribution without designating a bin width. If the bin width is set to less than 1, as it has in previous examples, R takes forever to come up with a graph. I think this is because it's trying to subdivide the price by those increments. So if I instead set the bin width to be 1,000 or 5,000 I get a graph much more quickly that drastically reduces the number of bins to be calculated in increments of $1,000 or $5,000._
+
+**3. How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?**  
+```{r}
+carat_sizes <- diamonds %>% 
+  filter(carat == 0.99) %>% 
+  select(carat, price) %>%
+  arrange(price)
+carat_sizes
+nrow(carat_sizes)
+
+carat_sizes2 <- diamonds %>% 
+  filter(carat == 1) %>% 
+  select(carat, price) %>%
+  arrange(price)
+carat_sizes2
+nrow(carat_sizes2)
+```
+
+_There are 23 diamonds with a carat size of 0.99 and 1,558 diamonds with a carat size of 1. I think the presence of 0.99 carat diamonds is not necessarily because there was demand for that size but more due to error during cutting to 1 carat since 0.99 is an unusual size. I strongly believe this is the case because the pricing is similar between these two carat sizes._
+
+**4. Compare and contrast `coord_cartesian()` vs `xlim()` or `ylim()` when zooming in on a histogram. What happens if you leave `binwidth` unset? What happens if you try and zoom so only half a bar shows?**  
+```{r}
+#With coord_cartesian
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y)) +
+  coord_cartesian(ylim = c(0, 50))
+
+#With xlim or ylim
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) + 
+  ylim(0,50)
+
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) + 
+  xlim(0,10)
+
+#Can I get a half a bar?
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) + 
+  xlim(5,5.25)
+
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 4000), xlim = c(0, 10))
+```
+
+_Since I know `y` has outliers, I will use that for exploring these. If bin width is left unspecified, R will let you know how many bins it made based on the values present. In this case it made 30 and wants better bins specified. `ylim()` limits the y values, so in this case I effectively filtered out anything with more than 50 obervations as well as rows that were missing data. With `xlim()` I can effectively filter out the outliers past 10. to try to get half a bar to show, I know that if I limit the y-axis with_ `coord_cartesian` _then I can zoom-in and see that the bars seem to extend above the graph. If I limit the x-axis with `xlim()` by attempting to zoom in to half a bin width that I set, this gives me a blank graph because `binwidth` is still trying to subgroup the data within the x limits given. I'm not sure how to zoom in to half a bar along the x-axis._
 
 ### 7.4.1 Exercises
 
