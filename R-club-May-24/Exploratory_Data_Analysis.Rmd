@@ -369,24 +369,111 @@ ggplot(diamonds, mapping = aes(price, fill = cut)) +
   geom_histogram(position = position_dodge(), binwidth = 2000)
 ```
 
-_On average, th diamonds with a lower cut are 1 carat._
+_On average, th diamonds with a lower cut are 1 carat. Not sure how to compare cut, carat, and price altogether._
 
 
-**3. Install the ggstance package, and create a horizontal boxplot. How does this compare to using `coord_flip()`?**
+**3. Install the ggstance package, and create a horizontal boxplot. How does this compare to using `coord_flip()`?**  
+```{r}
+library(ggstance)
+#coord_flip()
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = class, y = hwy)) +
+  coord_flip()
 
-**4. One problem with boxplots is that they were developed in an era of much smaller datasets and tend to display a prohibitively large number of “outlying values”. One approach to remedy this problem is the letter value plot. Install the lvplot package, and try using `geom_lv()` to display the distribution of price vs cut. What do you learn? How do you interpret the plots?**
+#geom_boxploth()
+ggplot(data = mpg, mapping = aes(x = hwy, y = class)) +
+  geom_boxploth()
+```
 
-**5. Compare and contrast `geom_violin()` with a facetted `geom_histogram()`, or a coloured `geom_freqpoly()`. What are the pros and cons of each method?**
+_To get a horizontal boxplot with `ggstance` functions, you need to manually switch the x and y axes in the mapping aesthetic whereas you 'can't' do this with the normal `ggplot` functions and have to use_ `coord_flip()`.
 
-**6. If you have a small dataset, it’s sometimes useful to use `geom_jitter()` to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to `geom_jitter()`. List them and briefly describe what each one does.**
+**4. One problem with boxplots is that they were developed in an era of much smaller datasets and tend to display a prohibitively large number of “outlying values”. One approach to remedy this problem is the letter value plot. Install the lvplot package, and try using `geom_lv()` to display the distribution of price vs cut. What do you learn? How do you interpret the plots?**  
+```{r}
+library(lvplot)
+
+ggplot(diamonds, mapping = aes(cut, price)) + 
+  geom_lv()
+```
+
+_The plot looks like a tree instead of a box... Also the interquartile markers are missing which is unfortunate if the interest is to compare based on them. These are supposed to be useful for huge datasets (n>200) but I'm not sure how to interpret these._
+
+**5. Compare and contrast `geom_violin()` with a facetted `geom_histogram()`, or a coloured `geom_freqpoly()`. What are the pros and cons of each method?**  
+```{r}
+ggplot(diamonds, aes(carat, price, fill = cut)) + 
+  labs(title = "Violin Chart") + 
+  geom_violin()
+
+ggplot(diamonds, aes(price)) + 
+  labs(title = "Histograms") + 
+  facet_wrap(~cut) + 
+  geom_histogram(binwidth = 5000)
+
+ggplot(diamonds, aes(price, colour = cut)) + 
+  labs(title = "Frequency Plot") + 
+  geom_freqpoly()
+```
+
+_Violin plots give a lot more flexibility to graph continuous vs continous and color based on categorical variables whereas in histograms and frequency plots, you are limited in the fact the y-axis is always for counts._
+
+**6. If you have a small dataset, it’s sometimes useful to use `geom_jitter()` to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to `geom_jitter()`. List them and briefly describe what each one does.**  
+* ggbeeswarm: _extends ggplot2 with violin point/beeswarm plots._  
+* position_quasirandom: _violin point-style plots to show overlapping points. x must be discrete._  
+* geom_beeswarm: _Points, jittered to reduce overplotting using the beeswarm package._  
+* position_beeswarm: _Violin point-style plots to show overlapping points. x must be discrete._  
+* geom_quasirandom: _Points, jittered to reduce overplotting using the vipor package._  
+
+### 7.5.2 Two categorical variables  
+
+Visualizing the covariation between categorical variables requires counting the number of observations for each combination with `geom_count()`:  
+```{r}
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = cut, y = color))
+```
+
+Where the size of each circle in the plot displays how many observations occurred at each combination of values. Covariation will appear as a strong correlation between specific x and y values. Another approach with `dplyr`:
+```{r}
+diamonds %>% 
+  count(color, cut)
+```
+
+Visualize:
+```{r}
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+```
+
+If they are unordered need to use seriation package to reorder rows and columns to reveal patterns. For larger plots use `d3heatmap` or `heatmaply` packages for interactive plots.  
 
 #### 7.5.2.1 Exercises
 
-**1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?**
+**1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?**  
+```{r}
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(aes(fill = n))
 
-**2. Use `geom_tile()` together with `dplyr` to explore how average flight delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?**
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = cut, y = color)) +
+    geom_tile(aes(fill = n))
+```
 
-**3. Why is it slightly better to use `aes(x = color, y = cut)` rather than `aes(x = cut, y = color)` in the example above?**
+_Not sure how to rescale..._
+
+**2. Use `geom_tile()` together with `dplyr` to explore how average flight delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?**  
+```{r}
+#nycflights13::flights %>% 
+  #ggplot(mapping = aes(dest, month)) + 
+    #geom_tile(aes(fill = mean(dep_delay)))
+```
+
+_Not sure how to do this one either. Somehow need to find the average delay based on destination and based on month, then need to compare those._
+
+**3. Why is it slightly better to use `aes(x = color, y = cut)` rather than `aes(x = cut, y = color)` in the example above?**  
+_Color vs Cut is more intuitive to interpret._
 
 #### 7.5.3.1 Exercises
 
