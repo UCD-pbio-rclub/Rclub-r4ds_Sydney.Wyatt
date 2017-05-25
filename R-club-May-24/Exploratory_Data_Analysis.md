@@ -391,6 +391,10 @@ ggplot(diamonds) +
 
 ![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-16-6.png)<!-- -->
 
+```r
+#Use coord_cartesian to zoom in to half a bin on the x-axis. generally use coord_cartesian anyways
+```
+
 _Since I know `y` has outliers, I will use that for exploring these. If bin width is left unspecified, R will let you know how many bins it made based on the values present. In this case it made 30 and wants better bins specified. `ylim()` limits the y values, so in this case I effectively filtered out anything with more than 50 obervations as well as rows that were missing data. With `xlim()` I can effectively filter out the outliers past 10. to try to get half a bar to show, I know that if I limit the y-axis with_ `coord_cartesian` _then I can zoom-in and see that the bars seem to extend above the graph. If I limit the x-axis with `xlim()` by attempting to zoom in to half a bin width that I set, this gives me a blank graph because `binwidth` is still trying to subgroup the data within the x limits given. I'm not sure how to zoom in to half a bar along the x-axis._
 
 ## 7.4 Missing Values  
@@ -636,7 +640,15 @@ ggplot(diamonds, mapping = aes(price, fill = cut)) +
 
 ![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-32-2.png)<!-- -->
 
-_On average, th diamonds with a lower cut are 1 carat. Not sure how to compare cut, carat, and price altogether._
+_On average, th diamonds with a lower cut are 1 carat. Not sure how to compare cut, carat, and price altogether Can plot just points._ 
+
+```r
+ggplot(diamonds, aes(carat, price)) + 
+  geom_point(aes(color = cut))
+```
+
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-33-1.png)<!-- -->
+
 
 
 **3. Install the ggstance package, and create a horizontal boxplot. How does this compare to using `coord_flip()`?**  
@@ -663,7 +675,7 @@ ggplot(data = mpg) +
   coord_flip()
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-33-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-34-1.png)<!-- -->
 
 ```r
 #geom_boxploth()
@@ -671,7 +683,7 @@ ggplot(data = mpg, mapping = aes(x = hwy, y = class)) +
   geom_boxploth()
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-33-2.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-34-2.png)<!-- -->
 
 _To get a horizontal boxplot with `ggstance` functions, you need to manually switch the x and y axes in the mapping aesthetic whereas you 'can't' do this with the normal `ggplot` functions and have to use_ `coord_flip()`.
 
@@ -681,10 +693,10 @@ _To get a horizontal boxplot with `ggstance` functions, you need to manually swi
 library(lvplot)
 
 ggplot(diamonds, mapping = aes(cut, price)) + 
-  geom_lv()
+  geom_lv(aes(fill = ..LV..))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-34-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-35-1.png)<!-- -->
 
 _The plot looks like a tree instead of a box... Also the interquartile markers are missing which is unfortunate if the interest is to compare based on them. These are supposed to be useful for huge datasets (n>200) but I'm not sure how to interpret these._
 
@@ -700,7 +712,7 @@ ggplot(diamonds, aes(carat, price, fill = cut)) +
 ## Warning: position_dodge requires non-overlapping x intervals
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-35-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-36-1.png)<!-- -->
 
 ```r
 ggplot(diamonds, aes(price)) + 
@@ -709,7 +721,7 @@ ggplot(diamonds, aes(price)) +
   geom_histogram(binwidth = 5000)
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-35-2.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-36-2.png)<!-- -->
 
 ```r
 ggplot(diamonds, aes(price, colour = cut)) + 
@@ -721,7 +733,7 @@ ggplot(diamonds, aes(price, colour = cut)) +
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-35-3.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-36-3.png)<!-- -->
 
 _Violin plots give a lot more flexibility to graph continuous vs continous and color based on categorical variables whereas in histograms and frequency plots, you are limited in the fact the y-axis is always for counts._
 
@@ -741,7 +753,7 @@ ggplot(data = diamonds) +
   geom_count(mapping = aes(x = cut, y = color))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-36-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-37-1.png)<!-- -->
 
 Where the size of each circle in the plot displays how many observations occurred at each combination of values. Covariation will appear as a strong correlation between specific x and y values. Another approach with `dplyr`:
 
@@ -778,7 +790,7 @@ diamonds %>%
     geom_tile(mapping = aes(fill = n))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-38-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-1.png)<!-- -->
 
 If they are unordered need to use seriation package to reorder rows and columns to reveal patterns. For larger plots use `d3heatmap` or `heatmaply` packages for interactive plots.  
 
@@ -793,7 +805,7 @@ diamonds %>%
     geom_tile(aes(fill = n))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-40-1.png)<!-- -->
 
 ```r
 diamonds %>% 
@@ -802,19 +814,33 @@ diamonds %>%
     geom_tile(aes(fill = n))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-2.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-40-2.png)<!-- -->
 
-_Not sure how to rescale..._
+```r
+#For rescaling:
+diamonds %>% 
+  count(color, cut) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  ggplot(mapping = aes(x = color, y = cut)) +
+  geom_tile(mapping = aes(fill = prop)) +
+  scale_fill_distiller(limits = c(0,1))
+```
+
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-40-3.png)<!-- -->
+
 
 **2. Use `geom_tile()` together with `dplyr` to explore how average flight delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?**  
 
 ```r
-#nycflights13::flights %>% 
-  #ggplot(mapping = aes(dest, month)) + 
-    #geom_tile(aes(fill = mean(dep_delay)))
+flights %>% 
+  group_by(month, dest) %>% 
+  summarize(mean_delay = mean(arr_delay, na.rm = TRUE)) %>% 
+  ggplot(mapping = aes(x = factor(month), y = dest)) +
+  geom_tile(aes(fill = mean_delay))
 ```
 
-_Not sure how to do this one either. Somehow need to find the average delay based on destination and based on month, then need to compare those._
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-41-1.png)<!-- -->
+
 
 **3. Why is it slightly better to use `aes(x = color, y = cut)` rather than `aes(x = cut, y = color)` in the example above?**  
 _Color vs Cut is more intuitive to interpret._
@@ -828,7 +854,7 @@ ggplot(data = diamonds) +
   geom_point(mapping = aes(x = carat, y = price), alpha = 1 / 100)
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-41-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-42-1.png)<!-- -->
 
 Can also use `geom_bin2d()` and `geom_hex()` to bin in two dimensions:  
 
@@ -838,14 +864,14 @@ ggplot(data = smaller) +
   geom_bin2d(mapping = aes(x = carat, y = price))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-42-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-43-1.png)<!-- -->
 
 ```r
 ggplot(data = smaller) +
   geom_hex(mapping = aes(x = carat, y = price))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-42-2.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-43-2.png)<!-- -->
 
 These function divide the coordinate plane into 2D bins and use a fill color to show how many points go into each bin. The difference is rectangular vs hexagonal bin shapes. Can also bin one continuous variable like it is a categorical variable:  
 
@@ -854,7 +880,7 @@ ggplot(data = smaller, mapping = aes(x = carat, y = price)) +
   geom_boxplot(mapping = aes(group = cut_width(carat, 0.1)))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-43-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-44-1.png)<!-- -->
 
 `cut_width()` divides `x` into bins of width `width` and can make width of boxplot proportional to number of points with `varwidth = TRUE`. Can also use `cut_number()` to display the same number of points per bin:  
 
@@ -863,38 +889,19 @@ ggplot(data = smaller, mapping = aes(x = carat, y = price)) +
   geom_boxplot(mapping = aes(group = cut_number(carat, 20)))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-44-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-45-1.png)<!-- -->
 
 
 #### 7.5.3.1 Exercises
 
 **1. Instead of summarising the conditional distribution with a boxplot, you could use a frequency polygon. What do you need to consider when using `cut_width()` vs `cut_number()`? How does that impact a visualisation of the 2d distribution of carat and price?**  
-_With these two functions applied to carat and price, the measurement of the bins is going to be different because the values contained in carat and price are different._  
-
-```r
-#ggplot(diamonds, aes(carat, price)) + 
-  #labs(title = "Cut Width with Carat") + 
-  #geom_freqpoly(aes(group = cut_width(carat, 0.5)))
-
-#ggplot(diamonds, aes(carat, price)) + 
-  #labs(title = "Cut Width with Price") + 
-  #geom_freqpoly(aes(group = cut_width(price, 1000)))
-
-#ggplot(diamonds, aes(carat, price)) + 
-  #labs(title = "Cut Number with Carat") + 
-  #geom_freqpoly(aes(group = cut_number(carat, 20)))
-
-#ggplot(diamonds, aes(carat, price)) + 
-  #labs(title = "Cut Number with Price") + 
-  #geom_freqpoly(aes(group = cut_number(price, 100)))
-```
-
+_With these two functions applied to carat and price, the measurement of the bins is going to be different because the values contained in carat and price are different.You would need to consider the distribution of your data points when deciding whether or not to use the_ `cut_number`, _or_ `cut_width`. _The cut number gives a better idea, visually, of the distribution of your points._  
 
 **2. Visualise the distribution of carat, partitioned by price.**  
 
 ```r
 ggplot(diamonds, aes(carat, price)) + 
-  geom_boxplot(aes(group = cut_number(price, 100)))
+  geom_boxplot(aes(group = cut_width(price, 1000)))
 ```
 
 ```
@@ -908,6 +915,14 @@ _It is surprising that relatively "small" diamonds of 1 carat or less are just a
 
 **4. Combine two of the techniques you’ve learned to visualise the combined distribution of cut, carat, and price.**
 
+```r
+#One example
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_boxplot(aes(fill = cut, cut_width(carat, 1)))
+```
+
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-47-1.png)<!-- -->
+
 **5. Two dimensional plots reveal outliers that are not visible in one dimensional plots. For example, some points in the plot below have an unusual combination of x and y values, which makes the points outliers even though their x and y values appear normal when examined separately.**
 
 ```r
@@ -916,6 +931,16 @@ ggplot(data = diamonds) +
   coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
 ```
 
-![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-47-1.png)<!-- -->
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-48-1.png)<!-- -->
 
-**Why is a scatterplot a better display than a binned plot for this case?**
+**Why is a scatterplot a better display than a binned plot for this case?**  
+_Binning can potentionally lose your outliers unintentially. Therefore it's easier to detect outliers in a scatterplot. There is a possibility of some detection with a boxplot._  
+
+```r
+ggplot(data = diamonds, mapping = aes(x = x, y = y)) +
+  geom_boxplot(mapping = aes(group = cut_width(x, .5))) +
+  coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+```
+
+![](Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-49-1.png)<!-- -->
+
