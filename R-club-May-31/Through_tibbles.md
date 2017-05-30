@@ -182,18 +182,18 @@ tibble(
 
 ```
 ## # A tibble: 1,000 × 5
-##                      a          b     c          d     e
-##                 <dttm>     <date> <int>      <dbl> <chr>
-## 1  2017-05-31 00:38:47 2017-06-17     1 0.88919325     j
-## 2  2017-05-31 10:03:46 2017-06-12     2 0.23251353     x
-## 3  2017-05-30 15:43:49 2017-05-31     3 0.12596146     d
-## 4  2017-05-31 06:24:30 2017-06-26     4 0.99525254     v
-## 5  2017-05-30 12:03:28 2017-06-16     5 0.37639003     f
-## 6  2017-05-30 23:23:28 2017-06-27     6 0.30502992     d
-## 7  2017-05-31 06:22:34 2017-06-27     7 0.68753072     c
-## 8  2017-05-30 11:40:19 2017-06-25     8 0.84023434     u
-## 9  2017-05-30 14:10:48 2017-06-06     9 0.02453957     r
-## 10 2017-05-31 09:04:25 2017-06-22    10 0.24128093     s
+##                      a          b     c         d     e
+##                 <dttm>     <date> <int>     <dbl> <chr>
+## 1  2017-05-31 07:01:12 2017-06-08     1 0.1533283     e
+## 2  2017-05-31 01:35:15 2017-06-01     2 0.7288776     r
+## 3  2017-05-30 15:46:33 2017-06-14     3 0.1109609     b
+## 4  2017-05-31 01:58:37 2017-06-22     4 0.8660077     k
+## 5  2017-05-30 13:43:43 2017-06-12     5 0.2295415     z
+## 6  2017-05-31 04:35:15 2017-06-15     6 0.6718576     c
+## 7  2017-05-31 07:11:14 2017-06-10     7 0.8948506     h
+## 8  2017-05-31 10:41:50 2017-06-11     8 0.2458218     u
+## 9  2017-05-30 15:07:44 2017-06-13     9 0.9230723     g
+## 10 2017-05-30 20:41:01 2017-06-10    10 0.9399503     u
 ## # ... with 990 more rows
 ```
 
@@ -270,7 +270,7 @@ df$x
 ```
 
 ```
-## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574
+## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278
 ```
 
 ```r
@@ -279,7 +279,7 @@ df[[1]]
 ```
 
 ```
-## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574
+## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278
 ```
 
 If used in a pipe, use `.` as a special placeholder:  
@@ -289,7 +289,7 @@ df %>% .$x
 ```
 
 ```
-## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574
+## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278
 ```
 
 ```r
@@ -297,7 +297,7 @@ df %>% .[["x"]]
 ```
 
 ```
-## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574
+## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278
 ```
 
 Tibbles are more strict than data frames; they never do partial matching and will generate a warning if the column you are trying to access doesn't exist.  
@@ -318,7 +318,8 @@ Main reason is the `[` function. `dplyr::filter()` and `dplyr::select()` allow y
 
 ## 10.5 Exercises  
 
-**1. How can you tell if an object is a tibble? (Hint: try printing `mtcars`, which is a regular data frame).**
+**1. How can you tell if an object is a tibble? (Hint: try printing `mtcars`, which is a regular data frame).**  
+_An object is a tibble if when printed includes the value types in the under the column names. Data frames when printed do not do this and this for me is the easiest way to identify a tibble vs a data frame. Additionally tibbles usually have "A tibble" with the dimensions of the tibble at the top of the output._
 
 **2. Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?**  
 
@@ -350,18 +351,47 @@ df[, c("abc", "xyz")]
 ## 1   1   a
 ```
 
-**3. If you have the name of a variable stored in an object, e.g. `var <- "mpg"`, how can you extract the reference variable from a tibble?**
+```r
+dft <- as.tibble(df)
+#dft$x
+dft[, "xyz"]
+```
 
-**4. Practice referring to non-syntactic names in the following data frame by:**
+```
+## # A tibble: 1 × 1
+##      xyz
+##   <fctr>
+## 1      a
+```
 
-> **1. Extracting the variable called `1`.**
+```r
+dft[, c("abc", "xyz")]
+```
 
-> **2. Plotting a scatterplot of `1` vs `2`.**
+```
+## # A tibble: 1 × 2
+##     abc    xyz
+##   <dbl> <fctr>
+## 1     1      a
+```
+_The first command `df$x` in the data frame returns the value of `xyz` because data frame subsetting allows for partial matching. In the tibble `dft`, the command returns an error: `Unknown or uninitialized column: 'x'.NULL`. The next command for the data frame `df[, "xyz"]` returns just the value again but the tibble command actually returns a 1x1 tibble. Finally, the last command for both data frame and tibble return the same thing, a 2x1 table with the columns characterized as `dbl` and `fctr`._  
 
-> **3. Creating a new column called `3` which is `2` divided by `1`.**
+**3. If you have the name of a variable stored in an object, e.g. `var <- "mpg"`, how can you extract the reference variable from a tibble?**  
+_Extract the mpg info from the tibble and store it in var._
 
-> **4. Renaming the columns to `one`, `two` and `three`.**
+```r
+var <- mtcars$mpg
+var
+```
 
+```
+##  [1] 21.0 21.0 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 17.8 16.4 17.3 15.2
+## [15] 10.4 10.4 14.7 32.4 30.4 33.9 21.5 15.5 15.2 13.3 19.2 27.3 26.0 30.4
+## [29] 15.8 19.7 15.0 21.4
+```
+
+
+**4. Practice referring to non-syntactic names in the following data frame by:**  
 
 ```r
 annoying <- tibble(
@@ -370,6 +400,101 @@ annoying <- tibble(
 )
 ```
 
-**5. What does `tibble::enframe()` do? When might you use it?**
+* **Extracting the variable called `1`.**
 
-**6. What option controls how many additional column names are printed at the footer of a tibble?**
+```r
+annoying$`1`
+```
+
+```
+##  [1]  1  2  3  4  5  6  7  8  9 10
+```
+
+
+* **Plotting a scatterplot of `1` vs `2`.**
+
+```r
+ggplot(annoying, aes(`1`, `2`)) +
+  geom_point()
+```
+
+![](Through_tibbles_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+
+
+* **Creating a new column called `3` which is `2` divided by `1`.**  
+
+```r
+annoying %>% mutate(`3` = `2`/`1`)
+```
+
+```
+## # A tibble: 10 × 3
+##      `1`        `2`       `3`
+##    <int>      <dbl>     <dbl>
+## 1      1  0.3046535 0.3046535
+## 2      2  3.5231164 1.7615582
+## 3      3  7.8394379 2.6131460
+## 4      4  8.6598255 2.1649564
+## 5      5  8.6723865 1.7344773
+## 6      6 12.3653865 2.0608978
+## 7      7 15.4509417 2.2072774
+## 8      8 15.4547517 1.9318440
+## 9      9 18.2594444 2.0288272
+## 10    10 19.7226935 1.9722693
+```
+
+
+* **Renaming the columns to `one`, `two` and `three`.**  
+
+```r
+annoying %>% mutate(`3` = `2`/`1`) %>% select("one" = `1`, "two"=`2`, "three"=`3`)
+```
+
+```
+## # A tibble: 10 × 3
+##      one        two     three
+##    <int>      <dbl>     <dbl>
+## 1      1  0.3046535 0.3046535
+## 2      2  3.5231164 1.7615582
+## 3      3  7.8394379 2.6131460
+## 4      4  8.6598255 2.1649564
+## 5      5  8.6723865 1.7344773
+## 6      6 12.3653865 2.0608978
+## 7      7 15.4509417 2.2072774
+## 8      8 15.4547517 1.9318440
+## 9      9 18.2594444 2.0288272
+## 10    10 19.7226935 1.9722693
+```
+
+
+**5. What does `tibble::enframe()` do? When might you use it?**  
+_`tibble::enframe()` converts atomic vectors to data frames and vice versa. The format is `enframe(x, name = "name", value = "value")` where `name` stores the column names, `value` stores the values, and `x` is an atomic vector for `enframe` or a data frame for `deframe()`. Especially in the second example below it looks like this function rearranges the table such that the columns `a` and `b` became rows._  
+
+```r
+enframe(1:3)
+```
+
+```
+## # A tibble: 3 × 2
+##    name value
+##   <int> <int>
+## 1     1     1
+## 2     2     2
+## 3     3     3
+```
+
+```r
+enframe(c(a = 5, b = 7))
+```
+
+```
+## # A tibble: 2 × 2
+##    name value
+##   <chr> <dbl>
+## 1     a     5
+## 2     b     7
+```
+
+
+**6. What option controls how many additional column names are printed at the footer of a tibble?** 
+`tibble.max_extra_cols` _controls the number of of extra columns printed in reduced form. The default is 100._

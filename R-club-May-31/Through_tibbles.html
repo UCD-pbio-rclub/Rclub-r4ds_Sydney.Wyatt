@@ -265,18 +265,18 @@ tb</code></pre>
   e = sample(letters, 1e3, replace = TRUE)
 )</code></pre>
 <pre><code>## # A tibble: 1,000 × 5
-##                      a          b     c          d     e
-##                 &lt;dttm&gt;     &lt;date&gt; &lt;int&gt;      &lt;dbl&gt; &lt;chr&gt;
-## 1  2017-05-31 00:38:47 2017-06-17     1 0.88919325     j
-## 2  2017-05-31 10:03:46 2017-06-12     2 0.23251353     x
-## 3  2017-05-30 15:43:49 2017-05-31     3 0.12596146     d
-## 4  2017-05-31 06:24:30 2017-06-26     4 0.99525254     v
-## 5  2017-05-30 12:03:28 2017-06-16     5 0.37639003     f
-## 6  2017-05-30 23:23:28 2017-06-27     6 0.30502992     d
-## 7  2017-05-31 06:22:34 2017-06-27     7 0.68753072     c
-## 8  2017-05-30 11:40:19 2017-06-25     8 0.84023434     u
-## 9  2017-05-30 14:10:48 2017-06-06     9 0.02453957     r
-## 10 2017-05-31 09:04:25 2017-06-22    10 0.24128093     s
+##                      a          b     c         d     e
+##                 &lt;dttm&gt;     &lt;date&gt; &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;
+## 1  2017-05-31 07:01:12 2017-06-08     1 0.1533283     e
+## 2  2017-05-31 01:35:15 2017-06-01     2 0.7288776     r
+## 3  2017-05-30 15:46:33 2017-06-14     3 0.1109609     b
+## 4  2017-05-31 01:58:37 2017-06-22     4 0.8660077     k
+## 5  2017-05-30 13:43:43 2017-06-12     5 0.2295415     z
+## 6  2017-05-31 04:35:15 2017-06-15     6 0.6718576     c
+## 7  2017-05-31 07:11:14 2017-06-10     7 0.8948506     h
+## 8  2017-05-31 10:41:50 2017-06-11     8 0.2458218     u
+## 9  2017-05-30 15:07:44 2017-06-13     9 0.9230723     g
+## 10 2017-05-30 20:41:01 2017-06-10    10 0.9399503     u
 ## # ... with 990 more rows</code></pre>
 <p>They are designed so you don’t accidentally overwhelm your console when you print large data frames. There are options if you need more output than the default display:</p>
 <pre class="r"><code>nycflights13::flights %&gt;% 
@@ -336,15 +336,15 @@ tb</code></pre>
 
 # Extract by name
 df$x</code></pre>
-<pre><code>## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574</code></pre>
+<pre><code>## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278</code></pre>
 <pre class="r"><code># Extract by position
 df[[1]]</code></pre>
-<pre><code>## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574</code></pre>
+<pre><code>## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278</code></pre>
 <p>If used in a pipe, use <code>.</code> as a special placeholder:</p>
 <pre class="r"><code>df %&gt;% .$x</code></pre>
-<pre><code>## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574</code></pre>
+<pre><code>## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278</code></pre>
 <pre class="r"><code>df %&gt;% .[[&quot;x&quot;]]</code></pre>
-<pre><code>## [1] 0.8804993 0.5722293 0.5625003 0.1413014 0.8503574</code></pre>
+<pre><code>## [1] 0.5062328 0.7406370 0.2778292 0.5900902 0.8751278</code></pre>
 <p>Tibbles are more strict than data frames; they never do partial matching and will generate a warning if the column you are trying to access doesn’t exist.</p>
 </div>
 </div>
@@ -357,7 +357,8 @@ df[[1]]</code></pre>
 </div>
 <div id="exercises" class="section level2">
 <h2>10.5 Exercises</h2>
-<p><strong>1. How can you tell if an object is a tibble? (Hint: try printing <code>mtcars</code>, which is a regular data frame).</strong></p>
+<p><strong>1. How can you tell if an object is a tibble? (Hint: try printing <code>mtcars</code>, which is a regular data frame).</strong><br />
+<em>An object is a tibble if when printed includes the value types in the under the column names. Data frames when printed do not do this and this for me is the easiest way to identify a tibble vs a data frame. Additionally tibbles usually have “A tibble” with the dimensions of the tibble at the top of the output.</em></p>
 <p><strong>2. Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?</strong></p>
 <pre class="r"><code>df &lt;- data.frame(abc = 1, xyz = &quot;a&quot;)
 df$x</code></pre>
@@ -369,26 +370,92 @@ df$x</code></pre>
 <pre class="r"><code>df[, c(&quot;abc&quot;, &quot;xyz&quot;)]</code></pre>
 <pre><code>##   abc xyz
 ## 1   1   a</code></pre>
-<p><strong>3. If you have the name of a variable stored in an object, e.g. <code>var &lt;- &quot;mpg&quot;</code>, how can you extract the reference variable from a tibble?</strong></p>
+<pre class="r"><code>dft &lt;- as.tibble(df)
+#dft$x
+dft[, &quot;xyz&quot;]</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##      xyz
+##   &lt;fctr&gt;
+## 1      a</code></pre>
+<pre class="r"><code>dft[, c(&quot;abc&quot;, &quot;xyz&quot;)]</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##     abc    xyz
+##   &lt;dbl&gt; &lt;fctr&gt;
+## 1     1      a</code></pre>
+<p><em>The first command <code>df$x</code> in the data frame returns the value of <code>xyz</code> because data frame subsetting allows for partial matching. In the tibble <code>dft</code>, the command returns an error: <code>Unknown or uninitialized column: 'x'.NULL</code>. The next command for the data frame <code>df[, &quot;xyz&quot;]</code> returns just the value again but the tibble command actually returns a 1x1 tibble. Finally, the last command for both data frame and tibble return the same thing, a 2x1 table with the columns characterized as <code>dbl</code> and <code>fctr</code>.</em></p>
+<p><strong>3. If you have the name of a variable stored in an object, e.g. <code>var &lt;- &quot;mpg&quot;</code>, how can you extract the reference variable from a tibble?</strong><br />
+<em>Extract the mpg info from the tibble and store it in var.</em></p>
+<pre class="r"><code>var &lt;- mtcars$mpg
+var</code></pre>
+<pre><code>##  [1] 21.0 21.0 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 17.8 16.4 17.3 15.2
+## [15] 10.4 10.4 14.7 32.4 30.4 33.9 21.5 15.5 15.2 13.3 19.2 27.3 26.0 30.4
+## [29] 15.8 19.7 15.0 21.4</code></pre>
 <p><strong>4. Practice referring to non-syntactic names in the following data frame by:</strong></p>
-<blockquote>
-<p><strong>1. Extracting the variable called <code>1</code>.</strong></p>
-</blockquote>
-<blockquote>
-<p><strong>2. Plotting a scatterplot of <code>1</code> vs <code>2</code>.</strong></p>
-</blockquote>
-<blockquote>
-<p><strong>3. Creating a new column called <code>3</code> which is <code>2</code> divided by <code>1</code>.</strong></p>
-</blockquote>
-<blockquote>
-<p><strong>4. Renaming the columns to <code>one</code>, <code>two</code> and <code>three</code>.</strong></p>
-</blockquote>
 <pre class="r"><code>annoying &lt;- tibble(
   `1` = 1:10,
   `2` = `1` * 2 + rnorm(length(`1`))
 )</code></pre>
-<p><strong>5. What does <code>tibble::enframe()</code> do? When might you use it?</strong></p>
-<p><strong>6. What option controls how many additional column names are printed at the footer of a tibble?</strong></p>
+<ul>
+<li><strong>Extracting the variable called <code>1</code>.</strong></li>
+</ul>
+<pre class="r"><code>annoying$`1`</code></pre>
+<pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10</code></pre>
+<ul>
+<li><strong>Plotting a scatterplot of <code>1</code> vs <code>2</code>.</strong></li>
+</ul>
+<pre class="r"><code>ggplot(annoying, aes(`1`, `2`)) +
+  geom_point()</code></pre>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAMAAABNUi8GAAAAkFBMVEUAAAAAADoAAGYAOpAAZrYzMzM6ADpNTU1NTW5NTY5NbqtNjshmAABmADpmtv9uTU1uTW5uTY5ubqtuq+SOTU2OTW6OTY6OyP+QOgCQ2/+rbk2rbm6rbo6ryKur5P+2ZgC2///Ijk3I///b///kq27k///r6+v/tmb/yI7/25D/5Kv//7b//8j//9v//+T///9Z68IJAAAACXBIWXMAAA7DAAAOwwHHb6hkAAALt0lEQVR4nO3c61obhwFF0UkbV7aT1teExElwobihCkHv/3aV5AtgO0iDhNigdX748gFLk2EzGohhmJmFN9z1AZhdN4FaegK19ARq6QnU0hOopTc20P+uvzGvS6N99jKB0sqaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaW2dQKfPJpOD2ezs9eTpO4HSdqqtEejZD4ez6fPD8zcHs5PvBErbqbZGoKeLKo8Ozn48nk1fHAuUFgv0w1V0+vLd8mI6mz2a7/pXN9vyrg/0/M2r2enTj4EutqWPj/Gj7Ze2VqBnr1/NP1V6KVDazrV1Ap0+O1hU6h6UdivaMAzXPNLqQN/3uXya91k8bevaMFxX6BqBnkwWO/B1UNqtaBsH+tWNOIDuqaEVNIHS2tqm96ACpd2dJlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlDa5tq1PxtktHb1ZQKlbapd/9OVxmqfvUygtE01gdLSmkBpbc09KG1fNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tHbTQM12OldQWlITKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAH4g2DMMG2qq3HqeNnUAfvjYMKxq7Vlv51qO00RPow9cEKtC0JlCBtjX3oAKl3YEmUFpaEygtra0X6PTF8Wx2MplMnhwLlJYL9HQZ5tGBKyht19o6gR49/m1+BT3/5VCgtF1r6z/Fn72eP8UvL6KP5rv21c22vdWBTp8fXrqKbunjY/xo+6WtH+hyn+5Dt/Tw40fbL02gtLS2fqCnT9/Nzn/1ZSbaTrURV9CTyeTxp0/kt/Tw40fbL229QL/clh5+/Gj7pQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLS2k0Dta1vGLwT/nquoHetDYttTfti91UTaEUT6NdfJtCIJtCvv0ygFe2zPlPHdneaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS09pVA3w7D3/49//335a/LTV8cz2ZnrydP3wmUtlPty0Df/v0/s9+Hf10O9HTy5Hh2/uZgdvKdQGk71b4I9I/v/7X89duLQI8e/za/gp79ePz+SipQ2p0HOvvzp28/e4qfvnw3O/vhcP63R/Otc59qtrVdfYqfLUIdrgZ6+vRjoItt6eNj/Gj7pX0Z6OztNz8vfvvzp7+6ggqUtjPtK4F+ZVP3oLS70dYP9PzNK5/F03atrR+or4PS7kBbL9Avt6WHHz/afmkCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQC9vGIYNsM3e+ovdo/N2i5pAL20YNmlss7f+cvfnvN2mJtBLE2hPE+ilCbSnCfTy3IPmNIHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tPbQAh35/8Pv67ttf7QHFujYf1F0X99t+6MJdIujbV8T6BZH2772wAJ1D/rQtIcWKO2BaQKlpTWB0tKaQGlp7aaBmu10rqC0pCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpbURgZ5MJpMnxwKlRQM9OnAFpe1aWz/Q818OBUrbtbZ+oGev50/xy4voo/lWX3DNtrjVgU6fH166im7p42P8aPulrR/ocp/uQ7f08ONH2y9NoLS0tn6gp0/fzc5/9WUm2k61EVfQk8nk8adP5Lf08ONH2y9tRKBXtqWHHz/afmkCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWlrLBToMwxa1VaPVtVqgw7Ci0Pt6omk30wRKS2sCpaW1WqDuQWlXX1YLlEa78jKB0sqaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0tpNAzXb6VxBaUlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpaU2gtLQmUFpaEygtrQmUltYESktrAqWlNYHS0ppAaWlNoLS0JlBaWhMoLa0JlJbWBEpLawKlpTWB0tKaQGlpTaC0tCZQWloTKC2tCZSW1gRKS2sCpaU1gdLSmkBpae0WAh2GYe2HHz/afmnbD3QYPiv0vp4aWkETKC2tCZSW1rYfqHtQ2ha1EYGevZ48fbdGoGMefvxo+6WtH+j5m4PZyXcCpe1UWz/Qsx+PZ9MXxwKlNQOdvnw3O/vhcP6nR/OtfHWzbW51oKdPPwa62JY+PsaPtl/a+oFeXEEFStuZtn6g7kFpd6CtH+j5m1c+i6ftWls/UF8Hpd2BNiLQK9vSw48fbb80gdLSmkBpaU2gtLQmUFpaEygtrQmUltZuGuidrfzPVBzbzbbOsQl0C3NsN5tAdzTHdrMJdEdzbDfbgwrU9nMCtfQEaukJ1NITqKWXD3T6bDI5WP7pZDKZPDle8eo73cURXflH3YUtDu3Dicudt+U3EF2csevPXT3QxbfrTZ8vv2Xv6OCuD+bzfTqiqz/corLT9+/32nk7XXy4XJyxFeeuHujp4tCXp/j8l8NVr7zjXRzR1W8sjOzDt+LWztvR49/mZ+rijK04d/VAF3t/pufPBB+f7CO7OKKr35od2YfLUu+8LXK8OGMrzt09CHTxbaXzLZ7oW1eDiyO6+sMtGvt4PMHzNg/04oytOHf9QM9ev7r4S+1+6sMRFa+gp5c/80idt4d1BZ0+u3xuUyd6ueURFe9Bj15d/kvpvE0f0j3oRZ+LK8L5r6UILo7o6g+3SOzTs3rvvC1yvDhjK85dPdAPX89b/DfN//i49Sz6/oiWF4Ta10E/Pn8Wz9ulr4OuPnf1QG3PJ1BLT6CWnkAtPYFaegK19ARq6QnU0hPore+Pf/5814dwjyfQW9/bbwR68wn0lvfH94NAN5hAb3m/f/u/fwj05hPorU+gm0ygtz6BbjKB3voEuskEeusT6CYT6K1PoJtMoLc+gW4ygd76BLrJBGrpCdTSE6ilJ1BLT6CWnkAtPYFaev8HEurcHPpuDsMAAAAASUVORK5CYII=" /><!-- --></p>
+<ul>
+<li><strong>Creating a new column called <code>3</code> which is <code>2</code> divided by <code>1</code>.</strong></li>
+</ul>
+<pre class="r"><code>annoying %&gt;% mutate(`3` = `2`/`1`)</code></pre>
+<pre><code>## # A tibble: 10 × 3
+##      `1`        `2`       `3`
+##    &lt;int&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+## 1      1  0.3046535 0.3046535
+## 2      2  3.5231164 1.7615582
+## 3      3  7.8394379 2.6131460
+## 4      4  8.6598255 2.1649564
+## 5      5  8.6723865 1.7344773
+## 6      6 12.3653865 2.0608978
+## 7      7 15.4509417 2.2072774
+## 8      8 15.4547517 1.9318440
+## 9      9 18.2594444 2.0288272
+## 10    10 19.7226935 1.9722693</code></pre>
+<ul>
+<li><strong>Renaming the columns to <code>one</code>, <code>two</code> and <code>three</code>.</strong></li>
+</ul>
+<pre class="r"><code>annoying %&gt;% mutate(`3` = `2`/`1`) %&gt;% select(&quot;one&quot; = `1`, &quot;two&quot;=`2`, &quot;three&quot;=`3`)</code></pre>
+<pre><code>## # A tibble: 10 × 3
+##      one        two     three
+##    &lt;int&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+## 1      1  0.3046535 0.3046535
+## 2      2  3.5231164 1.7615582
+## 3      3  7.8394379 2.6131460
+## 4      4  8.6598255 2.1649564
+## 5      5  8.6723865 1.7344773
+## 6      6 12.3653865 2.0608978
+## 7      7 15.4509417 2.2072774
+## 8      8 15.4547517 1.9318440
+## 9      9 18.2594444 2.0288272
+## 10    10 19.7226935 1.9722693</code></pre>
+<p><strong>5. What does <code>tibble::enframe()</code> do? When might you use it?</strong><br />
+<em><code>tibble::enframe()</code> converts atomic vectors to data frames and vice versa. The format is <code>enframe(x, name = &quot;name&quot;, value = &quot;value&quot;)</code> where <code>name</code> stores the column names, <code>value</code> stores the values, and <code>x</code> is an atomic vector for <code>enframe</code> or a data frame for <code>deframe()</code>. Especially in the second example below it looks like this function rearranges the table such that the columns <code>a</code> and <code>b</code> became rows.</em></p>
+<pre class="r"><code>enframe(1:3)</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##    name value
+##   &lt;int&gt; &lt;int&gt;
+## 1     1     1
+## 2     2     2
+## 3     3     3</code></pre>
+<pre class="r"><code>enframe(c(a = 5, b = 7))</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##    name value
+##   &lt;chr&gt; &lt;dbl&gt;
+## 1     a     5
+## 2     b     7</code></pre>
+<p><strong>6. What option controls how many additional column names are printed at the footer of a tibble?</strong> <code>tibble.max_extra_cols</code> <em>controls the number of of extra columns printed in reduced form. The default is 100.</em></p>
 </div>
 </div>
 
