@@ -1,0 +1,217 @@
+---
+title: "Through Tibbles"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+# Exploratory Data Analysis Continued
+
+## 7.6 Patterns and models  
+
+Ask questions about patterns:  
+* could this be due to random chance?  
+* how can you describe the relationship imlied by the pattern?  
+* how strong is that relationship?  
+* what other variables affect the relationship?  
+* does the relationship change if you look at individual subgroups?  
+
+Patterns reveal covariation. If two variables covary, you can use the values of one variable to make better predictions about the values of the second. If the covariation is due to a causal relationship, you can use the value of one variable to control the value of the second. Use models to extract such patterns out of the data.  
+For example, the model below predicts `price` from `carat` and then computes the residuals (difference between predicted value and actual value).  
+```{r}
+library(modelr)
+
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+
+diamonds2 <- diamonds %>% 
+  add_residuals(mod) %>% 
+  mutate(resid = exp(resid))
+
+ggplot(data = diamonds2) + 
+  geom_point(mapping = aes(x = carat, y = resid))
+
+ggplot(data = diamonds2) + 
+  geom_boxplot(mapping = aes(x = cut, y = resid))
+```
+
+
+Relative to their size, better quality diamonds are more expensive. This becomes apparent only after removing the strong relationship between cut and price.  
+
+## 7.8 Learning more  
+
+There is a whole book on ggplot2 including some dplyr and tidyr. There is also the R Graphics Cookbook and Graphical Data Analysis with R.  
+
+# Chapter 8  
+# Workflow: projects  
+
+1. What about your analysis is "real", ie what will you save as your lasting record of what happened?  
+2. Where does your analysis "live"?  
+
+## 8.1 What is real?  
+
+R scripts are "real", not the environment or the objects listed in the environment pane. With the R scripts, you recreate the environment. It's harder to create the scripts from the environment! It is useful to instruct RStudio not to save the workspace between sessions either through settings or just selecting that option each time when quitting. Some shortcut keystrokes:  
+1. Ctrl + Shift + F10 to restart RStudio  
+2. Ctrl + Shift + S to rerun current script  
+
+## 8.2 Where does your analysis live?  
+
+It lives in the working directory! It is at the top of the console or through the command `getwd()`. Should organize analytical projects into directories and when working on a project, set the working directory to the associated directory.  
+
+## 8.3 Paths and directories  
+
+There are two path styles: Mac/Linux and Windows. There are three ways in which they differ:  
+1. how you separate the components of the path. Mac and Linux uses slashes (`plots/diamonds.pdf`) and Windows uses backslashes (`plots\diamonds.pdf`). Because `\` is a special symbol in R, use `\\` for paths. Or just use Mac/Linux path styles.  
+2. Absolute paths in Windows start with a drive letter (`C:`) or two backslashes (`\\servername`) whereas Mac/Linux starts with a slash (`/users/hadley`). **NEVER** use absolute paths in your scripts because they hinder sharing - no one else will have exactly the same directory configuration as you.  
+3. `~` points to different places. It is a convenient shortcut to the home directory. In Windows, there is no home directory so it points to your documents directory.  
+
+## RStudio projects  
+
+Double-click `.Rproj` files to re-open projects. It will take you back to where you left off with the same working directory and command history and the files being worked on are still open. 
+
+# Chapter 10  
+# Tibbles  
+## 10.1 Introduction  
+
+Tibbles _are_ data frames but they tweak some older behaviors to make it easier to work with.  
+
+## 10.2 Creating tibbles  
+
+Might want to coerce a data fram to a tibble:  
+```{r}
+as_tibble(iris)
+```
+
+Can create a new tibble from individual vectors with `tibble()`. It will automatically recycle inputs of length 1 and allows you to refer to variables just created.  
+```{r}
+tibble(
+  x = 1:5, 
+  y = 1, 
+  z = x ^ 2 + y
+)
+```
+
+`tibble()` never changes the type of inputs, neer changes the names of variables, and never creates row names. Can have non-syntactic column names. To refer to these, need to surround them with backticks:  
+```{r}
+tb <- tibble(
+  `:)` = "smile", 
+  ` ` = "space",
+  `2000` = "number"
+)
+tb
+```
+
+Also use backticks when working with these variables in other packages.  
+
+Can also make transposed tibbles with `tribble()`. It is customized for data entry: column headings are defined by formulas and entries are separated by commas:  
+```{r}
+tribble(
+  ~x, ~y, ~z,
+  #--|--|----
+  "a", 2, 3.6,
+  "b", 1, 8.5
+)
+```
+
+Adding a comment helps make it really clear where the header is (`#--|--|----`).  
+
+## 10.3 Tibbles vs data.frame  
+### 10.3.1 Printing  
+
+Tibbles have a refined print method that shows only the first 10 rows and all columns that fit on the screen. Each column also reports its type.  
+```{r}
+tibble(
+  a = lubridate::now() + runif(1e3) * 86400,
+  b = lubridate::today() + runif(1e3) * 30,
+  c = 1:1e3,
+  d = runif(1e3),
+  e = sample(letters, 1e3, replace = TRUE)
+)
+```
+
+They are designed so you don't accidentally overwhelm your console when you print large data frames. There are options if you need more output than the default display:  
+```{r}
+nycflights13::flights %>% 
+  print(n = 10, width = Inf)
+```
+
+Can also set options:  
+* `options(tibble.print_max = n, tibble.print_min = m)` = if more than m rows, only print n of them. Or use `options(dplyr.print_min = Inf)` to always shows all rows.  
+* Use `options(tibble.width = Inf)` to always print all columns  
+
+Can also use built-in data viewer to get a scrollable view of complete dataset in a separate window:  
+```{r}
+nycflights13::flights %>% 
+  View()
+```
+### 10.3.2 Subseting  
+
+`[[`can extract by name or position; `$` only extracts by name.  
+```{r}
+df <- tibble(
+  x = runif(5),
+  y = rnorm(5)
+)
+
+# Extract by name
+df$x
+
+# Extract by position
+df[[1]]
+```
+
+If used in a pipe, use `.` as a special placeholder:  
+```{r}
+df %>% .$x
+
+df %>% .[["x"]]
+```
+
+Tibbles are more strict than data frames; they never do partial matching and will generate a warning if the column you are trying to access doesn't exist.  
+
+## 10.4 Interacting with older code  
+
+Some older functions don't work with tibbles. Can turn tibbles back into data frames for these:  
+```{r}
+class(as.data.frame(tb))
+```
+
+Main reason is the `[` function. `dplyr::filter()` and `dplyr::select()` allow you to solve the same problems with clearer code. With data frames, `[` sometimes returns a data frame and sometimes a vector but always returns a another tibble when used with a tibble.  
+
+## 10.5 Exercises  
+
+**1. How can you tell if an object is a tibble? (Hint: try printing `mtcars`, which is a regular data frame).**
+
+**2. Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?**  
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+```
+
+**3. If you have the name of a variable stored in an object, e.g. `var <- "mpg"`, how can you extract the reference variable from a tibble?**
+
+**4. Practice referring to non-syntactic names in the following data frame by:**
+
+> **1. Extracting the variable called `1`.**
+
+> **2. Plotting a scatterplot of `1` vs `2`.**
+
+> **3. Creating a new column called `3` which is `2` divided by `1`.**
+
+> **4. Renaming the columns to `one`, `two` and `three`.**
+
+```{r}
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+```
+
+**5. What does `tibble::enframe()` do? When might you use it?**
+
+**6. What option controls how many additional column names are printed at the footer of a tibble?**
