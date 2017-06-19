@@ -1,14 +1,6 @@
----
-title: "Chapter 12 Tidy data"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Chapter 12 Tidy data
 
-```{r, include=FALSE}
-library(tidyverse)
-library(ggplot2)
-```
+
 
 ## 12.2 Tidy data
 
@@ -29,13 +21,48 @@ _Variables are organised as columns and observations are organised as rows. In t
 **2. Extract the matching population per country per year.**  
 **3. Divide cases by population, and multiply by 10,000.**  
 **4. Store back in the appropriate place.**  **Which representation is easiest to work with? Which is hardest? Why?**  
-```{r}
+
+```r
 table1 = tibble("country" = c("Afghanistan", "Afghanistan", "Brazil", "Brazil", "China", "China"), "year" = c(1999,2000,1999,2000,1999,2000), "cases" = c(745, 2666, 37737, 80488, 212258, 213766), "population" = c(19987371,20595360, 172006362, 174504898, 1272915272, 1280428583),"rate" = c(0.373, 1.294, 2.194, 4.612, 1.667, 1.669))
 table1
+```
 
+```
+## # A tibble: 6 × 5
+##       country  year  cases population  rate
+##         <chr> <dbl>  <dbl>      <dbl> <dbl>
+## 1 Afghanistan  1999    745   19987371 0.373
+## 2 Afghanistan  2000   2666   20595360 1.294
+## 3      Brazil  1999  37737  172006362 2.194
+## 4      Brazil  2000  80488  174504898 4.612
+## 5       China  1999 212258 1272915272 1.667
+## 6       China  2000 213766 1280428583 1.669
+```
+
+```r
 table2 = tibble("country" = c("Afghanistan", "Afghanistan","Afghanistan", "Afghanistan","Brazil","Brazil","Brazil","Brazil","China","China", "China","China"), "year" = c(1999,1999,2000,2000,1999,1999,2000,2000,1999,1999,2000,2000), "type" = c("cases","population", "cases","population","cases","population","cases","population", "cases","population","cases","population"), "count" = c(745, 19987371, 2666, 20595360, 37737, 172006362, 80488, 174504898, 212258, 1272915272, 213766, 1280428583))
 table2
+```
 
+```
+## # A tibble: 12 × 4
+##        country  year       type      count
+##          <chr> <dbl>      <chr>      <dbl>
+## 1  Afghanistan  1999      cases        745
+## 2  Afghanistan  1999 population   19987371
+## 3  Afghanistan  2000      cases       2666
+## 4  Afghanistan  2000 population   20595360
+## 5       Brazil  1999      cases      37737
+## 6       Brazil  1999 population  172006362
+## 7       Brazil  2000      cases      80488
+## 8       Brazil  2000 population  174504898
+## 9        China  1999      cases     212258
+## 10       China  1999 population 1272915272
+## 11       China  2000      cases     213766
+## 12       China  2000 population 1280428583
+```
+
+```r
 t1cases = table1["cases"]
 t2cases = table2[table2$type=="cases","count"]
 t1pop = table1["population"]
@@ -50,10 +77,32 @@ table2 = rbind(table2, info)
 
 table4a = tibble("county" = c("Afghanistan","Brazil","China"), "`1999`" = c(745, 37737, 212258), "`2000`" = c(2666, 80488, 213766))
 table4a
+```
 
+```
+## # A tibble: 3 × 3
+##        county `\\`1999\\`` `\\`2000\\``
+##         <chr>        <dbl>        <dbl>
+## 1 Afghanistan          745         2666
+## 2      Brazil        37737        80488
+## 3       China       212258       213766
+```
+
+```r
 table4b = tibble("county" = c("Afghanistan","Brazil","China"), "`1999`" = c(19987371,172006362,1272915272), "`2000`" = c(20595360,174504898,1280428583))
 table4b
+```
 
+```
+## # A tibble: 3 × 3
+##        county `\\`1999\\`` `\\`2000\\``
+##         <chr>        <dbl>        <dbl>
+## 1 Afghanistan     19987371     20595360
+## 2      Brazil    172006362    174504898
+## 3       China   1272915272   1280428583
+```
+
+```r
 rate1999 = table4a[["`1999`"]]/table4b[["`1999`"]] 
 rate2000 = table4a[["`2000`"]]/table4b[["`2000`"]] 
 table4c = tibble("county" = c("Afghanistan","Brazil","China"), "`1999`" = rate1999, "`2000`" = rate2000)
@@ -61,11 +110,14 @@ table4c = tibble("county" = c("Afghanistan","Brazil","China"), "`1999`" = rate19
 
 
 **3. Recreate the plot showing change in cases over time using `table2` instead of `table1`. What do you need to do first?**  
-```{r}
+
+```r
 ggplot(table1, aes(year, cases)) + 
   geom_line(aes(group = country), colour = "grey50") + 
   geom_point(aes(colour = country))
 ```
+
+![](Tidy_data_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 
 ## 12.3 Spreading and gathering
@@ -80,17 +132,20 @@ A common problem is where some of the column names are not names oof variables b
 * The name of he variable whose values are spread over the cells. This is called `value` and here it is the number of `cases`.  
 
 The code would look like:  
-```{r}
+
+```r
 # table4a %>% gather(`1999`, `2000`, key="year". value="cases")
 ```
 
 The columns to gather are specified with `dplyr::select()` style notation.What about for `table4b`?  
-```{r}
+
+```r
 # table4b %>% gather(`1999`, `2000`, key="year", value="population")
 ```
 
 To combine the tidied versions into a single tibble, use `dplyr::left_join()`:  
-```{r}
+
+```r
 # tidy4a <- table4a %>% 
 #  gather(`1999`, `2000`, key = "year", value = "cases")
 #tidy4b <- table4b %>% 
@@ -105,7 +160,8 @@ Spreading is the opposite of gathering. In `table2` an observation is a country 
 * The column that contains values forms multiple variables is the `value` column. In `table2` it is `count`.  
 
 Example:  
-```{r}
+
+```r
 # spread(table2, key=type, value=count)
 ```
 
@@ -115,7 +171,8 @@ Example:
 ### 12.3.3 Exercises  
 
 **1. Why are `gather()` and `spread()` not perfectly symmetrical? Carefully consider the following example:**  
-```{r}
+
+```r
 stocks <- tibble(
   year = c(2015, 2015, 2016, 2016),
   half = c(   1,    2,     1,    2),
@@ -127,19 +184,31 @@ stocks %>%
   gather("year", "return", `2015`:`2016`)
 ```
 
+```
+## # A tibble: 4 × 3
+##    half  year return
+##   <dbl> <chr>  <dbl>
+## 1     1  2015   1.88
+## 2     2  2015   0.59
+## 3     1  2016   0.92
+## 4     2  2016   0.17
+```
+
 **(Hint: look at the variable types and think about column names.)**  
 **Both `spread()` and `gather()` have a `convert` argument. What does it do?**  
 _`gather()` needs at least two columns to gather together and a designated column to to put these into. `spread()` on the other hand just needs a column to spread, and it pulls the new column names from the original column._
 
 **2. Why does this code fail?**  
-```{r}
+
+```r
 #table4a %>% gather(1999, 2000, key="year", value="cases")
 ```
 
 _The column names are specified incorrectly._
 
 **3. Why does spreading this tibble fail? How could you add a nw column to fix the problem?**  
-```{r}
+
+```r
 people <- tribble(
    ~name,             ~key,    ~value,
   #-----------------|--------|------
@@ -152,15 +221,26 @@ people <- tribble(
 ```
 
 _Phillip Woods is on here twice with two different ages. A column can be added to specify between these two entries._
-```{r}
+
+```r
 people %>%
   mutate(entry = c(1,1,2,1,1)) %>%
   spread(key = key, value = value)
 ```
 
+```
+## # A tibble: 3 × 4
+##              name entry   age height
+## *           <chr> <dbl> <dbl>  <dbl>
+## 1 Jessica Cordero     1    37    156
+## 2   Phillip Woods     1    45    186
+## 3   Phillip Woods     2    50     NA
+```
+
 
 **4. Tidy the simple tibble below. Do you need to spread or gather it? What are the variables?**  
-```{r}
+
+```r
 preg <- tribble(
   ~pregnant, ~male, ~female,
   "yes",     NA,    10,
@@ -172,6 +252,16 @@ preg %>%
   gather(male, female, key = "gender", value = "count")
 ```
 
+```
+## # A tibble: 4 × 3
+##   pregnant gender count
+##      <chr>  <chr> <dbl>
+## 1      yes   male    NA
+## 2       no   male    20
+## 3      yes female    10
+## 4       no female    12
+```
+
 
 ## 12.4 Separating and uniting  
 
@@ -180,7 +270,8 @@ preg %>%
 ### 12.4.1 Separate  
 
 `separate()` pulls apart one column into multiple columns by splitting wherever a separator character appears. For `table3`, the `rate` column contains both `cases` and `population` variables. `separate()` takes the name of the column to separate, and the names of the columns to separate into:  
-```{r}
+
+```r
 # table3 %>% separate(rate, into=c("cases", "population"))
 ```
 
@@ -189,38 +280,137 @@ By default, `separate()` will split values wherever it sees a non-alphanumeric c
 ### 12.4.2 Unite  
 
 `unite()` is the inverse of `separate()` and is used less often. It combines multiple columns into a single column:  
-```{r}
+
+```r
 table5 %>% 
   unite(new, century, year)
 ```
 
+```
+## # A tibble: 6 × 3
+##       country   new              rate
+## *       <chr> <chr>             <chr>
+## 1 Afghanistan 19_99      745/19987071
+## 2 Afghanistan 20_00     2666/20595360
+## 3      Brazil 19_99   37737/172006362
+## 4      Brazil 20_00   80488/174504898
+## 5       China 19_99 212258/1272915272
+## 6       China 20_00 213766/1280428583
+```
+
 Here we also need to use the `sep` argument. The default places an underscore between the values from different columns.  
-```{r}
+
+```r
 table5 %>% 
   unite(new, century, year, sep = "")
+```
+
+```
+## # A tibble: 6 × 3
+##       country   new              rate
+## *       <chr> <chr>             <chr>
+## 1 Afghanistan  1999      745/19987071
+## 2 Afghanistan  2000     2666/20595360
+## 3      Brazil  1999   37737/172006362
+## 4      Brazil  2000   80488/174504898
+## 5       China  1999 212258/1272915272
+## 6       China  2000 213766/1280428583
 ```
 
 ### 12.4.3 Exercises  
 
 **1. What do the `extra` and `fill` arguments do in `separate()`? Experiment with the various options for the following two toy datasets.**  
-```{r}
+
+```r
 tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
   separate(x, c("one", "two", "three"))
+```
 
+```
+## Warning: Too many values at 1 locations: 2
+```
+
+```
+## # A tibble: 3 × 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e     f
+## 3     h     i     j
+```
+
+```r
 tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
   separate(x, c("one", "two", "three"), extra = "drop")
+```
 
+```
+## # A tibble: 3 × 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e     f
+## 3     h     i     j
+```
+
+```r
 tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
   separate(x, c("one", "two", "three"), extra = "merge")
+```
 
+```
+## # A tibble: 3 × 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e   f,g
+## 3     h     i     j
+```
+
+```r
 tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
   separate(x, c("one", "two", "three"))
+```
 
+```
+## Warning: Too few values at 1 locations: 2
+```
+
+```
+## # A tibble: 3 × 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e  <NA>
+## 3     f     g     i
+```
+
+```r
 tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
   separate(x, c("one", "two", "three"), fill = "left")
+```
 
+```
+## # A tibble: 3 × 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2  <NA>     d     e
+## 3     f     g     i
+```
+
+```r
 tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
   separate(x, c("one", "two", "three"), fill = "right")
+```
+
+```
+## # A tibble: 3 × 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e  <NA>
+## 3     f     g     i
 ```
 
 **2. Both `unite()` and `separate()` have a `remove` argument. What does it do? Why would you set it to `FALSE`?**  
